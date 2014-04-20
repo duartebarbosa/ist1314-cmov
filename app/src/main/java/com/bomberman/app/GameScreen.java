@@ -40,7 +40,7 @@ public class GameScreen extends Activity {
 
     public void onClickUp(View view) {
         gameMapView = (GameMap) findViewById(R.id.view);
-        gameMapView.setYCoord(gameMapView.getYCoord() - GameMap.CELL_SIZE);
+        gameMapView.setYCoord(gameMapView.getYCoord() - 1);
         gameMapView.setXCoord(gameMapView.getXCoord());
         gameMapView.setBombermanDirection(GameMap.Direction.TOP);
         gameMapView.invalidate();
@@ -49,7 +49,7 @@ public class GameScreen extends Activity {
 
     public void onClickDown(View view) {
         gameMapView = (GameMap) findViewById(R.id.view);
-        gameMapView.setYCoord(gameMapView.getYCoord() + GameMap.CELL_SIZE);
+        gameMapView.setYCoord(gameMapView.getYCoord() + 1);
         gameMapView.setXCoord(gameMapView.getXCoord());
         gameMapView.setBombermanDirection(GameMap.Direction.DOWN);
         gameMapView.invalidate();
@@ -58,7 +58,7 @@ public class GameScreen extends Activity {
 
     public void onClickLeft(View view) {
         gameMapView = (GameMap) findViewById(R.id.view);
-        gameMapView.setXCoord(gameMapView.getXCoord() - GameMap.CELL_SIZE);
+        gameMapView.setXCoord(gameMapView.getXCoord() - 1);
         gameMapView.setYCoord(gameMapView.getYCoord());
         gameMapView.setBombermanDirection(GameMap.Direction.LEFT);
         gameMapView.invalidate();
@@ -67,9 +67,16 @@ public class GameScreen extends Activity {
 
     public void onClickRight(View view) {
         gameMapView = (GameMap) findViewById(R.id.view);
-        gameMapView.setXCoord(gameMapView.getXCoord() + GameMap.CELL_SIZE);
+        gameMapView.setXCoord(gameMapView.getXCoord() + 1);
         gameMapView.setYCoord(gameMapView.getYCoord());
         gameMapView.setBombermanDirection(GameMap.Direction.RIGHT);
+        gameMapView.invalidate();
+
+    }
+
+    public void onClickBomb(View view) {
+        gameMapView = (GameMap) findViewById(R.id.view);
+        gameMapView.addBomb(gameMapView.getXCoord(), gameMapView.getYCoord());
         gameMapView.invalidate();
 
     }

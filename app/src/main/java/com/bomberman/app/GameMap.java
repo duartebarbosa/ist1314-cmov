@@ -27,17 +27,21 @@ import java.nio.BufferOverflowException;
  */
 public class GameMap extends View {
 
-    int xCoord, xCoordPrev, yCoord, yCoordPrev;
+    int xCoord, xCoordPrev, yCoord, yCoordPrev; // x = {0:NUM_COLUMNS} and y = {0:NUM_ROWS}
     Direction bombermanDirection;
     Paint paint;
     Bitmap originalTilesBitmap;
     Bitmap originalBombermanBitmap;
+    Bitmap originalEnemiesBitmap;
+    Bitmap originalBombBitmap;
     Bitmap wallBitmap;
     Bitmap obstacleBitmap;
     Bitmap bombermanDownBitmap;
     Bitmap bombermanLeftBitmap;
     Bitmap bombermanTopBitmap;
     Bitmap bombermanRightBitmap;
+    Bitmap bombBitmap;
+    Bitmap enemyBitmap;
     InputStream configFile;
     BufferedReader inn;
 
@@ -53,7 +57,7 @@ public class GameMap extends View {
     // these will depend on the config file info... => not constants
     private static final int NUM_ROWS = 13;
     private static final int NUM_COLUMNS = 19;
-    public static final int CELL_SIZE = 16;
+    private static final int CELL_SIZE = 16;
 
     public GameMap(Context context) {
         super(context);
@@ -78,12 +82,16 @@ public class GameMap extends View {
         paint = new Paint();
         originalTilesBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.bomberman_tiles_sheet);
         originalBombermanBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.bomberman_bomberman_sheet);
+        originalEnemiesBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.bomberman_enemies_sheet);
+        originalBombBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.bomberman_bomb_sheet);
         wallBitmap = Bitmap.createBitmap(originalTilesBitmap, 28, 0, 16, originalTilesBitmap.getHeight());
         obstacleBitmap = Bitmap.createBitmap(originalTilesBitmap, 58, 0, 16, originalTilesBitmap.getHeight());
         bombermanDownBitmap = Bitmap.createBitmap(originalBombermanBitmap, 0, 0, 14, 18);
         bombermanLeftBitmap = Bitmap.createBitmap(originalBombermanBitmap, 30, 0, 14, 18);
         bombermanTopBitmap = Bitmap.createBitmap(originalBombermanBitmap, 60, 0, 14, 18);
         bombermanRightBitmap = Bitmap.createBitmap(originalBombermanBitmap, 90, 0, 14, 18);
+        bombBitmap = Bitmap.createBitmap(originalBombBitmap, 0, 0, 16, 16);
+        enemyBitmap = Bitmap.createBitmap(originalEnemiesBitmap, 0, 0, 16, 16);
 
         configFile = getResources().openRawResource(R.raw.config);
         inn = new BufferedReader(new InputStreamReader(configFile));
@@ -96,8 +104,8 @@ public class GameMap extends View {
                 for (int x = 0 ; x < NUM_COLUMNS /*(read = inn.read()) != '\n'*/ ; x++) {
                     map[x][y] = inn.read();
                     if(map[x][y] == '1') {// player 1 (us?) initial pos
-                        xCoord = xCoordPrev = x * CELL_SIZE;
-                        yCoord = yCoordPrev = y * CELL_SIZE;
+                        xCoord = xCoordPrev = x;
+                        yCoord = yCoordPrev = y;
                     }
                 }
                 inn.read(); // ignore Windows line-separator (2 chars)
@@ -115,23 +123,23 @@ public class GameMap extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
-        if(map[xCoord/CELL_SIZE][yCoord/CELL_SIZE] == 'O' || map[xCoord/CELL_SIZE][yCoord/CELL_SIZE] == 'W') { // invalid movement, rewind
+        if(map[xCoord][yCoord] == 'O' || map[xCoord][yCoord] == 'W') { // invalid movement, rewind
             xCoord = xCoordPrev;
             yCoord = yCoordPrev;
         }
 
         switch (bombermanDirection) {
             case DOWN:
-                canvas.drawBitmap(bombermanDownBitmap, xCoord, yCoord, paint);
+                canvas.drawBitmap(bombermanDownBitmap, xCoord*CELL_SIZE, yCoord*CELL_SIZE, paint);
                 break;
             case LEFT:
-                canvas.drawBitmap(bombermanLeftBitmap, xCoord, yCoord, paint);
+                canvas.drawBitmap(bombermanLeftBitmap, xCoord*CELL_SIZE, yCoord*CELL_SIZE, paint);
                 break;
             case TOP:
-                canvas.drawBitmap(bombermanTopBitmap, xCoord, yCoord, paint);
+                canvas.drawBitmap(bombermanTopBitmap, xCoord*CELL_SIZE, yCoord*CELL_SIZE, paint);
                 break;
             case RIGHT:
-                canvas.drawBitmap(bombermanRightBitmap, xCoord, yCoord, paint);
+                canvas.drawBitmap(bombermanRightBitmap, xCoord*CELL_SIZE, yCoord*CELL_SIZE, paint);
                 break;
             default:
                 break;
@@ -145,6 +153,12 @@ public class GameMap extends View {
                         break;
                     case 'W':
                         canvas.drawBitmap(wallBitmap,x*CELL_SIZE,y*CELL_SIZE,paint);
+                        break;
+                    case 'R':
+                        canvas.drawBitmap(enemyBitmap,x*CELL_SIZE,y*CELL_SIZE,paint);
+                        break;
+                    case 'B':
+                        canvas.drawBitmap(bombBitmap,x*CELL_SIZE,y*CELL_SIZE,paint);
                         break;
                     default:
                         break;
@@ -179,5 +193,10 @@ public class GameMap extends View {
 
     public void setBombermanDirection(Direction bombermanDirection) {
         this.bombermanDirection = bombermanDirection;
+    }
+
+    public void addBomb(int x, int y){
+        map[x][y] = 'B';
+
     }
 }

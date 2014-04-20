@@ -18,32 +18,29 @@
         style="?android:attr/buttonStyleSmall"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="up"
+        android:text="^"
         android:id="@+id/button2"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="57dp"
-        android:onClick="onClickUp" />
+        android:onClick="onClickUp"
+        android:layout_above="@+id/button3"
+        android:layout_toRightOf="@+id/button" />
 
     <Button
         style="?android:attr/buttonStyleSmall"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="right"
+        android:text="&gt;"
         android:id="@+id/button3"
         android:onClick="onClickRight"
-        android:layout_marginLeft="29dp"
-        android:layout_alignParentBottom="true"
+        android:layout_alignTop="@+id/button4"
         android:layout_toRightOf="@+id/button4" />
 
     <Button
         style="?android:attr/buttonStyleSmall"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="left"
+        android:text="&lt;"
         android:id="@+id/button"
         android:onClick="onClickLeft"
-        android:layout_marginRight="28dp"
         android:layout_alignParentBottom="true"
         android:layout_toLeftOf="@+id/button4" />
 
@@ -51,9 +48,18 @@
         style="?android:attr/buttonStyleSmall"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="down"
+        android:text="v"
         android:id="@+id/button4"
         android:layout_alignTop="@+id/button"
         android:layout_centerHorizontal="true"
         android:onClick="onClickDown" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Bomb"
+        android:id="@+id/button5"
+        android:layout_above="@+id/button3"
+        android:layout_toRightOf="@+id/button3"
+        android:onClick="onClickBomb" />
 </RelativeLayout>
