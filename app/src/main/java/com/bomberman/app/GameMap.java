@@ -28,36 +28,6 @@ import java.nio.BufferOverflowException;
  */
 public class GameMap extends View {
 
-    int xCoord, xCoordPrev, yCoord, yCoordPrev; // x = {0:NUM_COLUMNS} and y = {0:NUM_ROWS}
-    Direction bombermanDirection;
-    Paint paint;
-    Bitmap originalTilesBitmap;
-    Bitmap originalBombermanBitmap;
-    Bitmap originalEnemiesBitmap;
-    Bitmap originalBombBitmap;
-    Bitmap wallBitmap;
-    Bitmap obstacleBitmap;
-    Bitmap bombermanDownBitmap;
-    Bitmap bombermanLeftBitmap;
-    Bitmap bombermanTopBitmap;
-    Bitmap bombermanRightBitmap;
-    Bitmap bombBitmap;
-    Bitmap explosionCenterBitmap;
-    Bitmap explosionHorizontalBitmap;
-    Bitmap explosionVerticalBitmap;
-    Bitmap explosionLeftBitmap;
-    Bitmap explosionRightBitmap;
-    Bitmap explosionTopBitmap;
-    Bitmap explosionBottomBitmap;
-    Bitmap enemyBitmap;
-
-    InputStream configFile;
-    BufferedReader inn;
-    String levelName;
-    int gameDuration, explosionTimeout, explosionDuration, explosionRange,
-            robotSpeed, pointsPerRobotKilled, pointsPerOpponentKilled;
-
-
     public enum Direction {
         DOWN,
         LEFT,
@@ -65,33 +35,44 @@ public class GameMap extends View {
         RIGHT
     }
 
-    int[][] map;    // keep map config internally
+    private int xCoord, xCoordPrev, yCoord, yCoordPrev; // x = {0:NUM_COLUMNS} and y = {0:NUM_ROWS}
+
+    private Direction bombermanDirection = Direction.DOWN;
+    private Paint paint;
+
+    private Bitmap originalTilesBitmap;
+    private Bitmap originalBombermanBitmap;
+    private Bitmap originalEnemiesBitmap;
+    private Bitmap originalBombBitmap;
+    private Bitmap wallBitmap;
+    private Bitmap obstacleBitmap;
+    private Bitmap bombermanDownBitmap;
+    private Bitmap bombermanLeftBitmap;
+    private Bitmap bombermanTopBitmap;
+    private Bitmap bombermanRightBitmap;
+    private Bitmap bombBitmap;
+    private Bitmap explosionCenterBitmap;
+    private Bitmap explosionHorizontalBitmap;
+    private Bitmap explosionVerticalBitmap;
+    private Bitmap explosionLeftBitmap;
+    private Bitmap explosionRightBitmap;
+    private Bitmap explosionTopBitmap;
+    private Bitmap explosionBottomBitmap;
+    private Bitmap enemyBitmap;
+
+    private String levelName;
+    private int gameDuration, explosionTimeout, explosionDuration, explosionRange,
+            robotSpeed, pointsPerRobotKilled, pointsPerOpponentKilled;
+
+    private int[][] map;    // keep map config internally
 
     // these will depend on the config file info... => not constants
     private static final int NUM_ROWS = 13;
     private static final int NUM_COLUMNS = 19;
     private static final int CELL_SIZE = 16;
 
-    public GameMap(Context context) {
-        super(context);
-        init(null, 0);
-
-
-    }
-
-    public GameMap(Context context, AttributeSet attrs) {
-        super(context, attrs);
-        init(attrs, 0);
-    }
-
-    public GameMap(Context context, AttributeSet attrs, int defStyle) {
-        super(context, attrs, defStyle);
-        init(attrs, defStyle);
-    }
-
     private void init(AttributeSet attrs, int defStyle) {
 
-        bombermanDirection = Direction.DOWN;
         paint = new Paint();
         originalTilesBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.bomberman_tiles_sheet);
         originalBombermanBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.bomberman_bomberman_sheet);
@@ -113,32 +94,32 @@ public class GameMap extends View {
         explosionBottomBitmap = Bitmap.createBitmap(originalBombBitmap, 150, 60, 16, 16);
         enemyBitmap = Bitmap.createBitmap(originalEnemiesBitmap, 0, 0, 16, 16);
 
-        configFile = getResources().openRawResource(R.raw.config);
-        inn = new BufferedReader(new InputStreamReader(configFile));
+        InputStream configFile = getResources().openRawResource(R.raw.config);
+        BufferedReader input = new BufferedReader(new InputStreamReader(configFile));
 
         try {
-            levelName = inn.readLine();
-            gameDuration = Integer.parseInt(inn.readLine());
-            explosionTimeout = Integer.parseInt(inn.readLine());
-            explosionDuration = Integer.parseInt(inn.readLine());
-            explosionRange = Integer.parseInt(inn.readLine());
-            robotSpeed = Integer.parseInt(inn.readLine());
-            pointsPerRobotKilled = Integer.parseInt(inn.readLine());
-            pointsPerOpponentKilled = Integer.parseInt(inn.readLine());
+            levelName = input.readLine();
+            gameDuration = Integer.parseInt(input.readLine());
+            explosionTimeout = Integer.parseInt(input.readLine());
+            explosionDuration = Integer.parseInt(input.readLine());
+            explosionRange = Integer.parseInt(input.readLine());
+            robotSpeed = Integer.parseInt(input.readLine());
+            pointsPerRobotKilled = Integer.parseInt(input.readLine());
+            pointsPerOpponentKilled = Integer.parseInt(input.readLine());
 
             map = new int[NUM_COLUMNS][NUM_ROWS]; // [x][y]
 
             //int read;
             for (int y = 0 ; y < NUM_ROWS ; y++) {
-                for (int x = 0; x < NUM_COLUMNS /*(read = inn.read()) != '\n'*/ ; x++) {
-                    map[x][y] = inn.read();
+                for (int x = 0; x < NUM_COLUMNS /*(read = input.read()) != '\n'*/ ; x++) {
+                    map[x][y] = input.read();
                     if (map[x][y] == '1') {// player 1 (us?) initial pos
                         xCoord = xCoordPrev = x;
                         yCoord = yCoordPrev = y;
                     }
                 }
-                inn.read(); // ignore Windows line-separator (2 chars)
-                inn.read(); // (config.txt was generated in Windows)
+                //input.read(); // ignore Windows line-separator (2 chars)
+                input.read(); // (config.txt was generated in Windows)
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -152,7 +133,6 @@ public class GameMap extends View {
 
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-
 
         for (int y = 0 ; y < NUM_ROWS ; y++) {
             for (int x = 0; x < NUM_COLUMNS; x++) {
@@ -174,13 +154,13 @@ public class GameMap extends View {
                         break;
                     case 'E':
                         int i;
-                        for(i=1 ; i<explosionRange ; i++){
+                        for(i = 1; i < explosionRange; i++){
                             canvas.drawBitmap(explosionHorizontalBitmap, (x-i) * CELL_SIZE, y * CELL_SIZE, paint);
                             canvas.drawBitmap(explosionHorizontalBitmap, (x+i) * CELL_SIZE, y * CELL_SIZE, paint);
                             canvas.drawBitmap(explosionVerticalBitmap, x * CELL_SIZE, (y-i) * CELL_SIZE, paint);
                             canvas.drawBitmap(explosionVerticalBitmap, x * CELL_SIZE, (y+i) * CELL_SIZE, paint);
-
                         }
+
                         canvas.drawBitmap(explosionTopBitmap, x * CELL_SIZE, (y-i) * CELL_SIZE, paint);
                         canvas.drawBitmap(explosionLeftBitmap, (x-i) * CELL_SIZE, y * CELL_SIZE, paint);
                         canvas.drawBitmap(explosionRightBitmap, (x+i) * CELL_SIZE, y * CELL_SIZE, paint);
@@ -269,4 +249,20 @@ public class GameMap extends View {
         handler.postDelayed(endExplosion, explosionTimeout*1000 + explosionDuration*1000);
 
     }
+
+    public GameMap(Context context) {
+        super(context);
+        init(null, 0);
+    }
+
+    public GameMap(Context context, AttributeSet attrs) {
+        super(context, attrs);
+        init(attrs, 0);
+    }
+
+    public GameMap(Context context, AttributeSet attrs, int defStyle) {
+        super(context, attrs, defStyle);
+        init(attrs, defStyle);
+    }
+
 }
