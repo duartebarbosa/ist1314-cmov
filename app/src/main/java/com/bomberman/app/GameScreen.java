@@ -40,28 +40,28 @@ public class GameScreen extends Activity {
 
     public void onClickUp(View view) {
         gameMapView = (GameMap) findViewById(R.id.view);
-        gameMapView.setYCoord(gameMapView.getYCoord() - 1);
+        gameMapView.setYCoord(gameMapView.getYCoord() - 16);
         gameMapView.invalidate();
 
     }
 
     public void onClickDown(View view) {
         gameMapView = (GameMap) findViewById(R.id.view);
-        gameMapView.setYCoord(gameMapView.getYCoord() + 1);
+        gameMapView.setYCoord(gameMapView.getYCoord() + 16);
         gameMapView.invalidate();
 
     }
 
     public void onClickLeft(View view) {
         gameMapView = (GameMap) findViewById(R.id.view);
-        gameMapView.setXCoord(gameMapView.getXCoord() - 1);
+        gameMapView.setXCoord(gameMapView.getXCoord() - 16);
         gameMapView.invalidate();
 
     }
 
     public void onClickRight(View view) {
         gameMapView = (GameMap) findViewById(R.id.view);
-        gameMapView.setXCoord(gameMapView.getXCoord() + 1);
+        gameMapView.setXCoord(gameMapView.getXCoord() + 16);
         gameMapView.invalidate();
 
     }
