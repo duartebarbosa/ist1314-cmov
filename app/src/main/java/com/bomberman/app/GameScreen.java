@@ -40,28 +40,36 @@ public class GameScreen extends Activity {
 
     public void onClickUp(View view) {
         gameMapView = (GameMap) findViewById(R.id.view);
-        gameMapView.setYCoord(gameMapView.getYCoord() - 16);
+        gameMapView.setYCoord(gameMapView.getYCoord() - GameMap.CELL_SIZE);
+        gameMapView.setXCoord(gameMapView.getXCoord());
+        gameMapView.setBombermanDirection(GameMap.Direction.TOP);
         gameMapView.invalidate();
 
     }
 
     public void onClickDown(View view) {
         gameMapView = (GameMap) findViewById(R.id.view);
-        gameMapView.setYCoord(gameMapView.getYCoord() + 16);
+        gameMapView.setYCoord(gameMapView.getYCoord() + GameMap.CELL_SIZE);
+        gameMapView.setXCoord(gameMapView.getXCoord());
+        gameMapView.setBombermanDirection(GameMap.Direction.DOWN);
         gameMapView.invalidate();
 
     }
 
     public void onClickLeft(View view) {
         gameMapView = (GameMap) findViewById(R.id.view);
-        gameMapView.setXCoord(gameMapView.getXCoord() - 16);
+        gameMapView.setXCoord(gameMapView.getXCoord() - GameMap.CELL_SIZE);
+        gameMapView.setYCoord(gameMapView.getYCoord());
+        gameMapView.setBombermanDirection(GameMap.Direction.LEFT);
         gameMapView.invalidate();
 
     }
 
     public void onClickRight(View view) {
         gameMapView = (GameMap) findViewById(R.id.view);
-        gameMapView.setXCoord(gameMapView.getXCoord() + 16);
+        gameMapView.setXCoord(gameMapView.getXCoord() + GameMap.CELL_SIZE);
+        gameMapView.setYCoord(gameMapView.getYCoord());
+        gameMapView.setBombermanDirection(GameMap.Direction.RIGHT);
         gameMapView.invalidate();
 
     }

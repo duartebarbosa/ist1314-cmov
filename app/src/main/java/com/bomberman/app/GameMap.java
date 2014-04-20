@@ -27,19 +27,33 @@ import java.nio.BufferOverflowException;
  */
 public class GameMap extends View {
 
-    int xCoord;
-    int yCoord;
+    int xCoord, xCoordPrev, yCoord, yCoordPrev;
+    Direction bombermanDirection;
     Paint paint;
     Bitmap originalTilesBitmap;
     Bitmap originalBombermanBitmap;
     Bitmap wallBitmap;
     Bitmap obstacleBitmap;
-    Bitmap bombermanBitmap;
+    Bitmap bombermanDownBitmap;
+    Bitmap bombermanLeftBitmap;
+    Bitmap bombermanTopBitmap;
+    Bitmap bombermanRightBitmap;
     InputStream configFile;
     BufferedReader inn;
 
-    private static final int NUM_ROWS = 12;
-    private static final int CELL_SIZE = 16;
+    public enum Direction {
+        DOWN,
+        LEFT,
+        TOP,
+        RIGHT
+    }
+
+    int[][] map;    // keep map config internally
+
+    // these will depend on the config file info... => not constants
+    private static final int NUM_ROWS = 13;
+    private static final int NUM_COLUMNS = 19;
+    public static final int CELL_SIZE = 16;
 
     public GameMap(Context context) {
         super(context);
@@ -60,22 +74,37 @@ public class GameMap extends View {
 
     private void init(AttributeSet attrs, int defStyle) {
 
-        xCoord = 0;
-        yCoord = 0;
+        bombermanDirection = Direction.DOWN;
         paint = new Paint();
         originalTilesBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.bomberman_tiles_sheet);
         originalBombermanBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.bomberman_bomberman_sheet);
         wallBitmap = Bitmap.createBitmap(originalTilesBitmap, 28, 0, 16, originalTilesBitmap.getHeight());
         obstacleBitmap = Bitmap.createBitmap(originalTilesBitmap, 58, 0, 16, originalTilesBitmap.getHeight());
-        bombermanBitmap = Bitmap.createBitmap(originalBombermanBitmap, 0, 0, 14, 18);
+        bombermanDownBitmap = Bitmap.createBitmap(originalBombermanBitmap, 0, 0, 14, 18);
+        bombermanLeftBitmap = Bitmap.createBitmap(originalBombermanBitmap, 30, 0, 14, 18);
+        bombermanTopBitmap = Bitmap.createBitmap(originalBombermanBitmap, 60, 0, 14, 18);
+        bombermanRightBitmap = Bitmap.createBitmap(originalBombermanBitmap, 90, 0, 14, 18);
 
         configFile = getResources().openRawResource(R.raw.config);
         inn = new BufferedReader(new InputStreamReader(configFile));
-        try {
-            inn.mark(1000);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+
+        map = new int[NUM_COLUMNS][NUM_ROWS]; // [x][y]
+
+        //int read;
+        for (int y = 0 ; y < NUM_ROWS ; y++)
+            try {
+                for (int x = 0 ; x < NUM_COLUMNS /*(read = inn.read()) != '\n'*/ ; x++) {
+                    map[x][y] = inn.read();
+                    if(map[x][y] == '1') {// player 1 (us?) initial pos
+                        xCoord = xCoordPrev = x * CELL_SIZE;
+                        yCoord = yCoordPrev = y * CELL_SIZE;
+                    }
+                }
+                inn.read(); // ignore Windows line-separator (2 chars)
+                inn.read(); // (config.txt was generated in Windows)
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
 
 
     }
@@ -86,40 +115,52 @@ public class GameMap extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
-        canvas.drawBitmap(bombermanBitmap, xCoord, yCoord, paint);
-
-        try {
-            inn.reset();
-        } catch (IOException e) {
-            e.printStackTrace();
+        if(map[xCoord/CELL_SIZE][yCoord/CELL_SIZE] == 'O' || map[xCoord/CELL_SIZE][yCoord/CELL_SIZE] == 'W') { // invalid movement, rewind
+            xCoord = xCoordPrev;
+            yCoord = yCoordPrev;
         }
-        int read;
-        for (int y = 0 ; y <= NUM_ROWS/2 ; y++)
-            try {
-                for (int x = 0 ; (read = inn.read()) != '\n' ; x++) {
-                    switch (read) {
-                        case 'O':
-                            canvas.drawBitmap(obstacleBitmap,x*CELL_SIZE,y*CELL_SIZE,paint);
-                            break;
-                        case 'W':
-                            canvas.drawBitmap(wallBitmap,x*CELL_SIZE,y*CELL_SIZE,paint);
-                            break;
-                        default:
-                            break;
-                    }
+
+        switch (bombermanDirection) {
+            case DOWN:
+                canvas.drawBitmap(bombermanDownBitmap, xCoord, yCoord, paint);
+                break;
+            case LEFT:
+                canvas.drawBitmap(bombermanLeftBitmap, xCoord, yCoord, paint);
+                break;
+            case TOP:
+                canvas.drawBitmap(bombermanTopBitmap, xCoord, yCoord, paint);
+                break;
+            case RIGHT:
+                canvas.drawBitmap(bombermanRightBitmap, xCoord, yCoord, paint);
+                break;
+            default:
+                break;
+        }
+
+        for (int y = 0 ; y < NUM_ROWS ; y++)
+            for (int x = 0 ; x < NUM_COLUMNS ; x++) {
+                switch (map[x][y]) {
+                    case 'O':
+                        canvas.drawBitmap(obstacleBitmap,x*CELL_SIZE,y*CELL_SIZE,paint);
+                        break;
+                    case 'W':
+                        canvas.drawBitmap(wallBitmap,x*CELL_SIZE,y*CELL_SIZE,paint);
+                        break;
+                    default:
+                        break;
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
             }
 
     }
 
 
+    // Named get*Coord and set*Coord so we don't override superclass's get* and set* methods
     public int getXCoord() {
         return xCoord;
     }
 
     public void setXCoord(int x) {
+        this.xCoordPrev = this.xCoord;
         this.xCoord = x;
     }
 
@@ -128,6 +169,15 @@ public class GameMap extends View {
     }
 
     public void setYCoord(int y) {
+        this.yCoordPrev = this.yCoord;
         this.yCoord = y;
+    }
+
+    public Direction getBombermanDirection() {
+        return bombermanDirection;
+    }
+
+    public void setBombermanDirection(Direction bombermanDirection) {
+        this.bombermanDirection = bombermanDirection;
     }
 }
