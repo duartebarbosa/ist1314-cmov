@@ -15,12 +15,12 @@ public class GameScreen extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game_screen);
+        gameMapView = (GameMap) findViewById(R.id.view);
     }
 
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.game_screen, menu);
         return true;
@@ -39,7 +39,6 @@ public class GameScreen extends Activity {
     }
 
     public void onClickUp(View view) {
-        gameMapView = (GameMap) findViewById(R.id.view);
         gameMapView.setXCoord(gameMapView.getXCoord() - 1);
         gameMapView.setBombermanDirection(GameMap.Direction.TOP);
         gameMapView.invalidate();
@@ -47,7 +46,6 @@ public class GameScreen extends Activity {
     }
 
     public void onClickDown(View view) {
-        gameMapView = (GameMap) findViewById(R.id.view);
         gameMapView.setXCoord(gameMapView.getXCoord() + 1);
         gameMapView.setBombermanDirection(GameMap.Direction.DOWN);
         gameMapView.invalidate();
@@ -55,7 +53,6 @@ public class GameScreen extends Activity {
     }
 
     public void onClickLeft(View view) {
-        gameMapView = (GameMap) findViewById(R.id.view);
         gameMapView.setYCoord(gameMapView.getYCoord() - 1);
         gameMapView.setBombermanDirection(GameMap.Direction.LEFT);
         gameMapView.invalidate();
@@ -63,7 +60,6 @@ public class GameScreen extends Activity {
     }
 
     public void onClickRight(View view) {
-        gameMapView = (GameMap) findViewById(R.id.view);
         gameMapView.setYCoord(gameMapView.getYCoord() + 1);
         gameMapView.setBombermanDirection(GameMap.Direction.RIGHT);
         gameMapView.invalidate();
@@ -71,7 +67,6 @@ public class GameScreen extends Activity {
     }
 
     public void onClickBomb(View view) {
-        gameMapView = (GameMap) findViewById(R.id.view);
         gameMapView.addBomb(gameMapView.getXCoord(), gameMapView.getYCoord());
         gameMapView.invalidate();
     }
