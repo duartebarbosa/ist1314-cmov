@@ -27,31 +27,32 @@ public class GameMap extends View {
         RIGHT
     }
 
-    private int xCoord, xCoordPrev, yCoord, yCoordPrev; // x = {0:NUM_ROWS} and y = {0:NUM_COLUMNS}
-
     private Direction bombermanDirection = Direction.DOWN;
     private Paint paint = new Paint();
 
     private final Bitmap originalTilesBitmap = initFactory(R.drawable.bomberman_tiles_sheet);
-    private final Bitmap originalBombermanBitmap = initFactory(R.drawable.bomberman_bomberman_sheet);
+    private final Bitmap originalBombermanBitmap = initFactory(R.drawable.bomberman_bomberman_sheet); //not being used..
     private final Bitmap originalEnemiesBitmap = initFactory(R.drawable.bomberman_enemies_sheet);
     private final Bitmap originalBombBitmap = initFactory(R.drawable.bomberman_bomb_sheet);
 
     private final Bitmap wallBitmap = Bitmap.createBitmap(originalTilesBitmap, 28, 0, 16, originalTilesBitmap.getHeight());
     private final Bitmap obstacleBitmap = Bitmap.createBitmap(originalTilesBitmap, 58, 0, 16, originalTilesBitmap.getHeight());
-    private final Bitmap bombermanDownBitmap = Bitmap.createBitmap(originalBombermanBitmap, 0, 0, 14, 18);
-    private final Bitmap bombermanLeftBitmap = Bitmap.createBitmap(originalBombermanBitmap, 30, 0, 14, 18);
-    private final Bitmap bombermanTopBitmap = Bitmap.createBitmap(originalBombermanBitmap, 60, 0, 14, 18);
-    private final Bitmap bombermanRightBitmap = Bitmap.createBitmap(originalBombermanBitmap, 90, 0, 14, 18);
-    private final Bitmap bombBitmap = Bitmap.createBitmap(originalBombBitmap, 0, 0, 16, 16);
-    private final Bitmap explosionCenterBitmap = Bitmap.createBitmap(originalBombBitmap, 150, 30, 16, 16);
-    private final Bitmap explosionHorizontalBitmap = Bitmap.createBitmap(originalBombBitmap, 180, 60, 16, 16);
-    private final Bitmap explosionVerticalBitmap = Bitmap.createBitmap(originalBombBitmap, 180, 0, 16, 16);
-    private final Bitmap explosionLeftBitmap = Bitmap.createBitmap(originalBombBitmap, 120, 30, 16, 16);
-    private final Bitmap explosionRightBitmap = Bitmap.createBitmap(originalBombBitmap, 180, 30, 16, 16);
-    private final Bitmap explosionTopBitmap = Bitmap.createBitmap(originalBombBitmap, 150, 0, 16, 16);
-    private final Bitmap explosionBottomBitmap = Bitmap.createBitmap(originalBombBitmap, 150, 60, 16, 16);
     private final Bitmap enemyBitmap = Bitmap.createBitmap(originalEnemiesBitmap, 0, 0, 16, 16);
+
+    private final Bitmap bombermanDownBitmap = createBitmap(0, 0, 14, 18);
+    private final Bitmap bombermanLeftBitmap = createBitmap(30, 0, 14, 18);
+    private final Bitmap bombermanTopBitmap = createBitmap(60, 0, 14, 18);
+    private final Bitmap bombermanRightBitmap = createBitmap(90, 0, 14, 18);
+    private final Bitmap bombBitmap = createBitmap(0, 0, 16, 16);
+    private final Bitmap explosionCenterBitmap = createBitmap(150, 30, 16, 16);
+    private final Bitmap explosionHorizontalBitmap = createBitmap(180, 60, 16, 16);
+    private final Bitmap explosionVerticalBitmap = createBitmap(180, 0, 16, 16);
+    private final Bitmap explosionLeftBitmap = createBitmap(120, 30, 16, 16);
+    private final Bitmap explosionRightBitmap = createBitmap(180, 30, 16, 16);
+    private final Bitmap explosionTopBitmap = createBitmap(150, 0, 16, 16);
+    private final Bitmap explosionBottomBitmap = createBitmap(150, 60, 16, 16);
+
+    private int xCoord, xCoordPrev, yCoord, yCoordPrev; // x = {0:NUM_ROWS} and y = {0:NUM_COLUMNS}
 
     private String levelName;
     private int gameDuration, explosionTimeout, explosionDuration, explosionRange,
@@ -65,6 +66,10 @@ public class GameMap extends View {
 
     private Bitmap initFactory(int id){
         return BitmapFactory.decodeResource(getResources(), id);
+    }
+
+    private Bitmap createBitmap(int a, int b, int c, int d){
+        return Bitmap.createBitmap(originalBombBitmap, a, b, c, d);
     }
 
     private void init(AttributeSet attrs, int defStyle) {
@@ -131,6 +136,7 @@ public class GameMap extends View {
                         canvas.drawBitmap(bombBitmap, y_float, x_float, paint);
                         break;
                     case 'E':
+                        //TODO: não atropelar paredes.
                         int i = 1;
                         for(; i < explosionRange; i++){
                             canvas.drawBitmap(explosionHorizontalBitmap, (y-i) * CELL_SIZE, x_float, paint);
