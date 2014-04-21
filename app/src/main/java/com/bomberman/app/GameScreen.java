@@ -40,6 +40,7 @@ public class GameScreen extends Activity {
 
     public void onClickUp(View view) {
         gameMapView.setXCoord(gameMapView.getXCoord() - 1);
+        gameMapView.setYCoord(gameMapView.getYCoord());
         gameMapView.setBombermanDirection(GameMap.Direction.TOP);
         //TODO: change to 4 params invalidate();
         gameMapView.invalidate();
@@ -47,6 +48,7 @@ public class GameScreen extends Activity {
 
     public void onClickDown(View view) {
         gameMapView.setXCoord(gameMapView.getXCoord() + 1);
+        gameMapView.setYCoord(gameMapView.getYCoord());
         gameMapView.setBombermanDirection(GameMap.Direction.DOWN);
         //TODO: change to 4 params invalidate();
         gameMapView.invalidate();
@@ -54,6 +56,7 @@ public class GameScreen extends Activity {
 
     public void onClickLeft(View view) {
         gameMapView.setYCoord(gameMapView.getYCoord() - 1);
+        gameMapView.setXCoord(gameMapView.getXCoord());
         gameMapView.setBombermanDirection(GameMap.Direction.LEFT);
         //TODO: change to 4 params invalidate();
         gameMapView.invalidate();
@@ -61,6 +64,7 @@ public class GameScreen extends Activity {
 
     public void onClickRight(View view) {
         gameMapView.setYCoord(gameMapView.getYCoord() + 1);
+        gameMapView.setXCoord(gameMapView.getXCoord());
         gameMapView.setBombermanDirection(GameMap.Direction.RIGHT);
         //TODO: change to 4 params invalidate();
         gameMapView.invalidate();
