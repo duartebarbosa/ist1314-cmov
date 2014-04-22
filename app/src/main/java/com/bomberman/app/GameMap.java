@@ -8,6 +8,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.os.Handler;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 
 import java.io.BufferedReader;
@@ -147,31 +148,41 @@ public class GameMap extends View {
                     case 'E':
                         //TODO: não atropelar paredes.
                         int i = 1;
+                        boolean stopExplosionSouth,stopExplosionNorth,stopExplosionWest,stopExplosionEast;
+                        stopExplosionEast=stopExplosionNorth=stopExplosionSouth=stopExplosionWest=false;
                         for(; i < explosionRange; i++){
                             if(y-i >= 0)
-                                if(map[x][y-i] != 'W')
+                                if(map[x][y-i] != 'W' && !stopExplosionWest)
                                     canvas.drawBitmap(explosionHorizontalBitmap, (y-i) * CELL_SIZE, x_float, paint);
+                                else
+                                    stopExplosionWest = true;
                             if(y+i < NUM_COLUMNS)
-                                if(map[x][y+i] != 'W')
+                                if(map[x][y+i] != 'W' && !stopExplosionEast)
                                     canvas.drawBitmap(explosionHorizontalBitmap, (y+i) * CELL_SIZE, x_float, paint);
+                                else
+                                    stopExplosionEast = true;
                             if(x-i >= 0)
-                                if(map[x-i][y] != 'W')
+                                if(map[x-i][y] != 'W' && !stopExplosionNorth)
                                     canvas.drawBitmap(explosionVerticalBitmap, y_float, (x-i) * CELL_SIZE, paint);
+                                else
+                                    stopExplosionNorth = true;
                             if(x+i < NUM_ROWS)
-                                if(map[x+i][y] != 'W')
+                                if(map[x+i][y] != 'W' && !stopExplosionSouth)
                                     canvas.drawBitmap(explosionVerticalBitmap, y_float, (x+i) * CELL_SIZE, paint);
+                                else
+                                    stopExplosionSouth = true;
                         }
                         if(x-i >= 0)
-                            if(map[x-i][y] != 'W')
+                            if(map[x-i][y] != 'W' && !stopExplosionNorth)
                                 canvas.drawBitmap(explosionTopBitmap, y_float, (x-i) * CELL_SIZE, paint);
                         if(y-i >= 0)
-                            if(map[x][y-i] != 'W')
+                            if(map[x][y-i] != 'W' && !stopExplosionWest)
                                 canvas.drawBitmap(explosionLeftBitmap, (y-i) * CELL_SIZE, x_float, paint);
                         if(y+i < NUM_COLUMNS)
-                            if(map[x][y+i] != 'W')
+                            if(map[x][y+i] != 'W' && !stopExplosionEast)
                                 canvas.drawBitmap(explosionRightBitmap, (y+i) * CELL_SIZE, x_float, paint);
                         if(x+i < NUM_ROWS)
-                            if(map[x+i][y] != 'W')
+                            if(map[x+i][y] != 'W' && !stopExplosionSouth)
                                 canvas.drawBitmap(explosionBottomBitmap, y_float, (x+i) * CELL_SIZE, paint);
                         canvas.drawBitmap(explosionCenterBitmap, y_float, x_float, paint);
 
@@ -206,6 +217,7 @@ public class GameMap extends View {
             default:
                 break;
         }
+        killPlayer(xPlayerCoord,yPlayerCoord, canvas);
 
 
         paint.setColor(Color.BLACK);
@@ -249,6 +261,8 @@ public class GameMap extends View {
 
     // can we kill ourselves or only other players?
     private void killPlayer(int x, int y, Canvas canvas){
+
+        // collision with explosion
         for(int i = 1 ; i <= explosionRange; i++) {
             if ((xPlayerCoord == x - i && yPlayerCoord == y) ||
                     (xPlayerCoord == x + i && yPlayerCoord == y) ||
@@ -264,34 +278,56 @@ public class GameMap extends View {
 
             }
         }
+
+        // collision with robots
+        if (((y-1 >= 0) && (map[x][y-1] == 'R')) ||
+            ((y+1 < NUM_COLUMNS) && (map[x][y+1] == 'R')) ||
+            ((x-1 >= 0) && (map[x-1][y] == 'R')) ||
+            ((x+1 < NUM_ROWS) && (map[x+1][y] == 'R'))) {
+            xPlayerCoord = xPlayerInitialCoord;
+            yPlayerCoord = yPlayerInitialCoord;
+            paint.setColor(Color.BLACK);
+            paint.setStyle(Paint.Style.FILL);
+            paint.setTextSize(20);
+            canvas.drawText("ja foste, noob", getWidth() / 2, 250, paint);
+            paint.reset();
+
+        }
     }
 
     private void destroy(char object, int x, int y, Canvas canvas) {
+        boolean stopDestroyingSouth,stopDestroyingNorth,stopDestroyingWest,stopDestroyingEast;
+        stopDestroyingEast=stopDestroyingNorth=stopDestroyingSouth=stopDestroyingWest=false;
         for(int i = 1 ; i <= explosionRange; i++) {
             if(x-i >= 0)
-                if (map[x-i][y] == object) {
+                if (map[x-i][y] != 'W' && !stopDestroyingNorth && map[x-i][y] == object) {
                     map[x - i][y] = '-';
                     if (object == 'R')
                         playerScore += pointsPerRobotKilled;
-                }
-            if(x+i < NUM_COLUMNS)
-                if (map[x+i][y] == object){
+                } else
+                    stopDestroyingNorth = true;
+            Log.d("GameMap.Java", "x="+x+"    i="+i+"   NUM_COLUMNS="+NUM_COLUMNS+"      NUM_ROWS="+NUM_ROWS);
+            if(x+i < NUM_ROWS)
+                if (map[x+i][y] != 'W' && !stopDestroyingSouth && map[x+i][y] == object){
                     map[x+i][y] = '-';
                     if (object == 'R')
                         playerScore += pointsPerRobotKilled;
-                }
+                } else
+                    stopDestroyingSouth = true;
             if(y-i >= 0)
-                if (map[x][y-i] == object) {
+                if (map[x][y-i] != 'W' && !stopDestroyingEast && map[x][y-i] == object) {
                     map[x][y-i] = '-';
                     if (object == 'R')
                         playerScore += pointsPerRobotKilled;
-                }
-            if(y+i < NUM_ROWS)
-                if (map[x][y+i] == object){
+                } else
+                    stopDestroyingEast = true;
+            if(y+i < NUM_COLUMNS)
+                if (map[x][y+i] != 'W' && !stopDestroyingWest && map[x][y+i] == object){
                     map[x][y+i] = '-';
                     if (object == 'R')
                         playerScore += pointsPerRobotKilled;
-                }
+                } else
+                    stopDestroyingWest = true;
 
         }
     }
