@@ -14,6 +14,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Random;
 
 
 /**
@@ -67,6 +68,10 @@ public class GameMap extends View {
     private static int NUM_ROWS;
     private static int NUM_COLUMNS;
     private static final int CELL_SIZE = 16;
+
+
+    Random randomGenerator = new Random();
+
 
     private Bitmap initFactory(int id){
         return BitmapFactory.decodeResource(getResources(), id);
@@ -296,6 +301,84 @@ public class GameMap extends View {
         }
     }
 
+    private Boolean playerNear(int x, int y){
+        return (map[x][y] >= 1 || map[x][y] <= 3)? true : false;
+    }
+
+    // invalid movement, rewind
+    private Boolean obstacleNear(int x, int y){
+        return (map[x][y] == 'O' || map[x][y] == 'W')? true : false;
+    }
+
+    private void swapCells(int x, int y, int x_new, int y_new){
+        //no check is done. use carefully.
+        map[x_new][y_new] = map[x][y];
+        map[x][y] = '-';
+    }
+
+    private Boolean findPlayer(int x, int y){
+        //top;
+        if(playerNear(x-1, y)) {
+            //killPlayer();
+            swapCells(x, y, x-1, y);
+            return true;
+        }
+        //right;
+        if(playerNear(x, y+1)) {
+            //killPlayer();
+            swapCells(x, y, x, y+1);
+            return true;
+        }
+        //down;
+        if(playerNear(x+1, y)) {
+            //killPlayer();
+            swapCells(x, y, x+1, y);
+            return true;
+        }
+        //left;
+        if(playerNear(x, y-1)) {
+            //killPlayer();
+            swapCells(x, y, x, y-1);
+            return true;
+        }
+        return false;
+    }
+
+    private void findEmptyCell(int x, int y){
+        search:
+        while(true) {
+            int randomInt = randomGenerator.nextInt(4);
+
+            switch (randomInt) {
+                case 0: //top
+                    if (obstacleNear(x-1,y)) break;
+                    swapCells(x, y, x-1, y);
+                    break search;
+                case 1: //right
+                    if (obstacleNear(x,y+1)) break;
+                    swapCells(x, y, x, y+1);
+                    break search;
+                case 2: //down
+                    if (obstacleNear(x+1,y)) break;
+                    swapCells(x, y, x+1, y);
+                    break search;
+                case 3: //left
+                    if (obstacleNear(x,y-1)) break;
+                    swapCells(x, y, x, y-1);
+                    break search;
+                default: //fuck.
+                    break;
+            }
+        }
+    }
+
+    public void moveRobots(int x, int y){
+        //not so random. kill the bastards first if they are anywhere near.
+        if(findPlayer(x, y)) return;
+
+        //ok, they left the building earlier. just find a suitable place to rest during the night.
+        findEmptyCell(x, y);
+    }
 
     // Named get*Coord and set*Coord so we don't override superclass's get* and set* methods
     public int getXCoord() {
