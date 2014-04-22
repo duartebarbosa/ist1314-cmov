@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.os.Handler;
 import android.util.AttributeSet;
@@ -54,7 +55,8 @@ public class GameMap extends View {
     private final Bitmap explosionTopBitmap = createBombBitmap(150, 0, 16, 16);
     private final Bitmap explosionBottomBitmap = createBombBitmap(150, 60, 16, 16);
 
-    private int xCoord, xCoordPrev, yCoord, yCoordPrev; // x = {0:NUM_ROWS} and y = {0:NUM_COLUMNS}
+    private int xPlayerCoord, xPlayerCoordPrev, yPlayerCoord, yPlayerCoordPrev, xPlayerInitialCoord, yPlayerInitialCoord;
+    private int playerScore = 0;
 
     private String levelName;
     private int gameDuration, explosionTimeout, explosionDuration, explosionRange,
@@ -105,8 +107,8 @@ public class GameMap extends View {
                 for(int y = 0; y < NUM_COLUMNS; y++){
                     map[x][y] = row[y];
                     if (map[x][y] == '1') {// player 1 (us?) initial pos
-                        xCoord = xCoordPrev = x;
-                        yCoord = yCoordPrev = y;
+                        xPlayerCoord = xPlayerCoordPrev = xPlayerInitialCoord = x;
+                        yPlayerCoord = yPlayerCoordPrev = yPlayerInitialCoord = y;
                     }
                 }
             }
@@ -124,8 +126,9 @@ public class GameMap extends View {
         for (int x = 0; x < NUM_ROWS; x++) {
             int x_float = x * CELL_SIZE;
             for (int y = 0 ; y < NUM_COLUMNS; y++) {
-                paint.setColor(getResources().getColor(android.R.color.holo_green_dark));
                 int y_float = y * CELL_SIZE;
+                paint.setColor(getResources().getColor(android.R.color.holo_green_dark));
+                paint.setAlpha(60);
                 canvas.drawRect(y_float, x_float, y_float + CELL_SIZE, x_float + CELL_SIZE, paint);
                 paint.reset();
                 switch (map[x][y]) {
@@ -145,17 +148,36 @@ public class GameMap extends View {
                         //TODO: não atropelar paredes.
                         int i = 1;
                         for(; i < explosionRange; i++){
-                            canvas.drawBitmap(explosionHorizontalBitmap, (y-i) * CELL_SIZE, x_float, paint);
-                            canvas.drawBitmap(explosionHorizontalBitmap, (y+i) * CELL_SIZE, x_float, paint);
-                            canvas.drawBitmap(explosionVerticalBitmap, y_float, (x-i) * CELL_SIZE, paint);
-                            canvas.drawBitmap(explosionVerticalBitmap, y_float, (x+i) * CELL_SIZE, paint);
+                            if(y-i >= 0)
+                                if(map[x][y-i] != 'W')
+                                    canvas.drawBitmap(explosionHorizontalBitmap, (y-i) * CELL_SIZE, x_float, paint);
+                            if(y+i < NUM_COLUMNS)
+                                if(map[x][y+i] != 'W')
+                                    canvas.drawBitmap(explosionHorizontalBitmap, (y+i) * CELL_SIZE, x_float, paint);
+                            if(x-i >= 0)
+                                if(map[x-i][y] != 'W')
+                                    canvas.drawBitmap(explosionVerticalBitmap, y_float, (x-i) * CELL_SIZE, paint);
+                            if(x+i < NUM_ROWS)
+                                if(map[x+i][y] != 'W')
+                                    canvas.drawBitmap(explosionVerticalBitmap, y_float, (x+i) * CELL_SIZE, paint);
                         }
-
-                        canvas.drawBitmap(explosionTopBitmap, y_float, (x-i) * CELL_SIZE, paint);
-                        canvas.drawBitmap(explosionLeftBitmap, (y-i) * CELL_SIZE, x_float, paint);
-                        canvas.drawBitmap(explosionRightBitmap, (y+i) * CELL_SIZE, x_float, paint);
-                        canvas.drawBitmap(explosionBottomBitmap, y_float, (x+i) * CELL_SIZE, paint);
+                        if(x-i >= 0)
+                            if(map[x-i][y] != 'W')
+                                canvas.drawBitmap(explosionTopBitmap, y_float, (x-i) * CELL_SIZE, paint);
+                        if(y-i >= 0)
+                            if(map[x][y-i] != 'W')
+                                canvas.drawBitmap(explosionLeftBitmap, (y-i) * CELL_SIZE, x_float, paint);
+                        if(y+i < NUM_COLUMNS)
+                            if(map[x][y+i] != 'W')
+                                canvas.drawBitmap(explosionRightBitmap, (y+i) * CELL_SIZE, x_float, paint);
+                        if(x+i < NUM_ROWS)
+                            if(map[x+i][y] != 'W')
+                                canvas.drawBitmap(explosionBottomBitmap, y_float, (x+i) * CELL_SIZE, paint);
                         canvas.drawBitmap(explosionCenterBitmap, y_float, x_float, paint);
+
+                        destroy('O',x,y,canvas);
+                        destroy('R', x, y, canvas);
+                        killPlayer(x, y, canvas);
                         break;
                     default:
                         break;
@@ -163,9 +185,9 @@ public class GameMap extends View {
             }
         }
 
-        if(map[xCoord][yCoord] == 'O' || map[xCoord][yCoord] == 'W') { // invalid movement, rewind
-            xCoord = xCoordPrev;
-            yCoord = yCoordPrev;
+        if(map[xPlayerCoord][yPlayerCoord] == 'O' || map[xPlayerCoord][yPlayerCoord] == 'W') { // invalid movement, rewind
+            xPlayerCoord = xPlayerCoordPrev;
+            yPlayerCoord = yPlayerCoordPrev;
         }
 
         switch (bombermanDirection) {
@@ -185,10 +207,18 @@ public class GameMap extends View {
                 break;
         }
 
+
+        paint.setColor(Color.BLACK);
+        paint.setStyle(Paint.Style.FILL);
+        paint.setTextSize(20);
+        canvas.drawText("Score: "+Integer.toString(playerScore), 0,250,paint);
+        paint.reset();
+
     }
 
+
     private void drawBomberman(Canvas canvas, Bitmap id){
-        canvas.drawBitmap(id, yCoord*CELL_SIZE, xCoord*CELL_SIZE, paint);
+        canvas.drawBitmap(id, yPlayerCoord *CELL_SIZE, xPlayerCoord *CELL_SIZE, paint);
     }
 
     public void addBomb(final int x, final int y){
@@ -207,7 +237,7 @@ public class GameMap extends View {
             @Override
             public void run() {
                 map[x][y] = '-';
-                kill(x, y);
+                //killPlayer(x, y);
                 invalidate();
             }
         };
@@ -217,27 +247,73 @@ public class GameMap extends View {
 
     }
 
-    private void kill(int x, int y){
-        //kill everyone in the target radius; destroy walls
+    // can we kill ourselves or only other players?
+    private void killPlayer(int x, int y, Canvas canvas){
+        for(int i = 1 ; i <= explosionRange; i++) {
+            if ((xPlayerCoord == x - i && yPlayerCoord == y) ||
+                    (xPlayerCoord == x + i && yPlayerCoord == y) ||
+                    (xPlayerCoord == x && yPlayerCoord == y - i) ||
+                    (xPlayerCoord == x && yPlayerCoord == y + i)) {
+                xPlayerCoord = xPlayerInitialCoord;
+                yPlayerCoord = yPlayerInitialCoord;
+                paint.setColor(Color.BLACK);
+                paint.setStyle(Paint.Style.FILL);
+                paint.setTextSize(20);
+                canvas.drawText("ja foste, noob", getWidth() / 2, 250, paint);
+                paint.reset();
+
+            }
+        }
     }
+
+    private void destroy(char object, int x, int y, Canvas canvas) {
+        for(int i = 1 ; i <= explosionRange; i++) {
+            if(x-i >= 0)
+                if (map[x-i][y] == object) {
+                    map[x - i][y] = '-';
+                    if (object == 'R')
+                        playerScore += pointsPerRobotKilled;
+                }
+            if(x+i < NUM_COLUMNS)
+                if (map[x+i][y] == object){
+                    map[x+i][y] = '-';
+                    if (object == 'R')
+                        playerScore += pointsPerRobotKilled;
+                }
+            if(y-i >= 0)
+                if (map[x][y-i] == object) {
+                    map[x][y-i] = '-';
+                    if (object == 'R')
+                        playerScore += pointsPerRobotKilled;
+                }
+            if(y+i < NUM_ROWS)
+                if (map[x][y+i] == object){
+                    map[x][y+i] = '-';
+                    if (object == 'R')
+                        playerScore += pointsPerRobotKilled;
+                }
+
+        }
+    }
+
 
     // Named get*Coord and set*Coord so we don't override superclass's get* and set* methods
     public int getXCoord() {
-        return xCoord;
+        return xPlayerCoord;
     }
 
     public void setXCoord(int x) {
-        this.xCoordPrev = this.xCoord;
-        this.xCoord = x;
+        this.xPlayerCoordPrev = this.xPlayerCoord;
+        this.xPlayerCoord = x;
     }
 
     public int getYCoord() {
-        return yCoord;
+        return yPlayerCoord;
     }
 
     public void setYCoord(int y) {
-        this.yCoordPrev = this.yCoord;
-        this.yCoord = y;
+        this.yPlayerCoordPrev = this.yPlayerCoord;
+        this.yPlayerCoord = y;
     }
 
     public Direction getBombermanDirection() {
