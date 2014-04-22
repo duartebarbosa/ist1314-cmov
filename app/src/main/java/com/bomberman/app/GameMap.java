@@ -70,6 +70,33 @@ public class GameMap extends View {
     private static int NUM_COLUMNS;
     private static final int CELL_SIZE = 16;
 
+    Handler handler = new Handler();
+    // create a new class so we can pass arguments to the Runnable
+    public class MoveRobotsRunnable implements Runnable {
+        int x,y;
+        public MoveRobotsRunnable(int _x, int _y) {
+            this.x = _x;
+            this.y = _y;
+        }
+
+        public void run() {
+            Coord newCoord = moveRobots(x,y);
+            x = newCoord.x;
+            y = newCoord.y;
+            //killPlayer(x, y);
+            invalidate();
+            handler.postDelayed(this, 1000/robotSpeed);
+        }
+    }
+
+    public class Coord {
+        int x,y;
+        public Coord(int _x, int _y) {
+            this.x = _x;
+            this.y = _y;
+        }
+
+    }
 
     Random randomGenerator = new Random();
 
@@ -116,8 +143,13 @@ public class GameMap extends View {
                         xPlayerCoord = xPlayerCoordPrev = xPlayerInitialCoord = x;
                         yPlayerCoord = yPlayerCoordPrev = yPlayerInitialCoord = y;
                     }
+                    if (map[x][y] == 'R') { // create one Runnable for each robot
+                        MoveRobotsRunnable runnable = new MoveRobotsRunnable(x,y);
+                        handler.postDelayed(runnable, 1000/robotSpeed);
+                    }
                 }
             }
+
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -151,7 +183,6 @@ public class GameMap extends View {
                         canvas.drawBitmap(bombBitmap, y_float, x_float, paint);
                         break;
                     case 'E':
-                        //TODO: não atropelar paredes.
                         int i = 1;
                         boolean stopExplosionSouth,stopExplosionNorth,stopExplosionWest,stopExplosionEast;
                         stopExplosionEast=stopExplosionNorth=stopExplosionSouth=stopExplosionWest=false;
@@ -241,8 +272,6 @@ public class GameMap extends View {
     public void addBomb(final int x, final int y){
         map[x][y] = 'B';
 
-        Handler handler = new Handler();
-
         Runnable startExplosion = new Runnable() {
             @Override
             public void run() {
@@ -264,7 +293,7 @@ public class GameMap extends View {
 
     }
 
-    // can we kill ourselves or only other players?
+    // TODO: can we kill ourselves with our own bomb or only other players?
     private void killPlayer(int x, int y, Canvas canvas){
 
         // collision with explosion
@@ -305,115 +334,134 @@ public class GameMap extends View {
         stopDestroyingEast=stopDestroyingNorth=stopDestroyingSouth=stopDestroyingWest=false;
         for(int i = 1 ; i <= explosionRange; i++) {
             if(x-i >= 0)
-                if (map[x-i][y] != 'W' && !stopDestroyingNorth && map[x-i][y] == object) {
-                    map[x - i][y] = '-';
-                    if (object == 'R')
-                        playerScore += pointsPerRobotKilled;
+                if (map[x-i][y] != 'W' && !stopDestroyingNorth) {
+                    if(map[x-i][y] == object) {
+                        map[x - i][y] = '-';
+                        if (object == 'R')
+                            playerScore += pointsPerRobotKilled;
+                    }
                 } else
                     stopDestroyingNorth = true;
-            Log.d("GameMap.Java", "x="+x+"    i="+i+"   NUM_COLUMNS="+NUM_COLUMNS+"      NUM_ROWS="+NUM_ROWS);
+            //Log.d("GameMap.Java", "x="+x+"    i="+i+"   NUM_COLUMNS="+NUM_COLUMNS+"      NUM_ROWS="+NUM_ROWS);
             if(x+i < NUM_ROWS)
-                if (map[x+i][y] != 'W' && !stopDestroyingSouth && map[x+i][y] == object){
-                    map[x+i][y] = '-';
-                    if (object == 'R')
-                        playerScore += pointsPerRobotKilled;
+                if (map[x+i][y] != 'W' && !stopDestroyingSouth){
+                    if(map[x+i][y] == object) {
+                        map[x + i][y] = '-';
+                        if (object == 'R')
+                            playerScore += pointsPerRobotKilled;
+                    }
                 } else
                     stopDestroyingSouth = true;
             if(y-i >= 0)
-                if (map[x][y-i] != 'W' && !stopDestroyingEast && map[x][y-i] == object) {
-                    map[x][y-i] = '-';
-                    if (object == 'R')
-                        playerScore += pointsPerRobotKilled;
+                if (map[x][y-i] != 'W' && !stopDestroyingEast) {
+                    if(map[x][y-i] == object) {
+                        map[x][y - i] = '-';
+                        if (object == 'R')
+                            playerScore += pointsPerRobotKilled;
+                    }
                 } else
                     stopDestroyingEast = true;
             if(y+i < NUM_COLUMNS)
-                if (map[x][y+i] != 'W' && !stopDestroyingWest && map[x][y+i] == object){
-                    map[x][y+i] = '-';
-                    if (object == 'R')
-                        playerScore += pointsPerRobotKilled;
+                if (map[x][y+i] != 'W' && !stopDestroyingWest){
+                    if(map[x][y+i] == object) {
+                        map[x][y + i] = '-';
+                        if (object == 'R')
+                            playerScore += pointsPerRobotKilled;
+                    }
                 } else
                     stopDestroyingWest = true;
 
         }
     }
 
+    // TODO: check maximum number of players - we assume 3 here
+    // TODO: isto n funca pq n actualizamos o '1' no map[][], so a xPlayerCoord e yPlayerCoord
     private Boolean playerNear(int x, int y){
-        return (map[x][y] >= 1 || map[x][y] <= 3)? true : false;
+        if ((y >= 0) && (y < NUM_COLUMNS) && (x >= 0) && (x < NUM_ROWS))
+            return (map[x][y] >= '1' && map[x][y] <= '3')? true : false;
+        else
+            return false;
     }
 
     // invalid movement, rewind
     private Boolean obstacleNear(int x, int y){
-        return (map[x][y] == 'O' || map[x][y] == 'W')? true : false;
+        if ((y >= 0) && (y < NUM_COLUMNS) && (x >= 0) && (x < NUM_ROWS))
+            return (map[x][y] == 'O' || map[x][y] == 'W')? true : false;
+        else
+            return false;
     }
 
-    private void swapCells(int x, int y, int x_new, int y_new){
-        //no check is done. use carefully.
-        map[x_new][y_new] = map[x][y];
-        map[x][y] = '-';
+    private Coord swapCells(int x, int y, int x_new, int y_new){
+        if ((y_new >= 0) && (y_new < NUM_COLUMNS) && (x_new >= 0) && (x_new < NUM_ROWS)) {
+            map[x_new][y_new] = map[x][y];
+            map[x][y] = '-';
+            return new Coord(x_new,y_new);
+        } else
+            return null;
     }
 
-    private Boolean findPlayer(int x, int y){
+    private Coord findPlayer(int x, int y){
         //top;
-        if(playerNear(x-1, y)) {
+        if(playerNear(x-2, y)) {
             //killPlayer();
-            swapCells(x, y, x-1, y);
-            return true;
+            return swapCells(x, y, x-2, y);
         }
         //right;
-        if(playerNear(x, y+1)) {
+        if(playerNear(x, y+2)) {
             //killPlayer();
-            swapCells(x, y, x, y+1);
-            return true;
+            return swapCells(x, y, x, y+2);
         }
         //down;
-        if(playerNear(x+1, y)) {
+        if(playerNear(x+2, y)) {
             //killPlayer();
-            swapCells(x, y, x+1, y);
-            return true;
+            return swapCells(x, y, x+2, y);
         }
         //left;
-        if(playerNear(x, y-1)) {
+        if(playerNear(x, y-2)) {
             //killPlayer();
-            swapCells(x, y, x, y-1);
-            return true;
+            return swapCells(x, y, x, y-2);
         }
-        return false;
+        return null;
     }
 
-    private void findEmptyCell(int x, int y){
-        search:
-        while(true) {
-            int randomInt = randomGenerator.nextInt(4);
-
+    private Coord findEmptyCell(int x, int y){
+        int randomInt;
+        // try at most a limited amount of times - the robot could be stuck between 4 walls
+        for(int noOfTries = 0 ; noOfTries < 8 ; noOfTries++) {
+            randomInt = randomGenerator.nextInt(4);
             switch (randomInt) {
                 case 0: //top
-                    if (obstacleNear(x-1,y)) break;
-                    swapCells(x, y, x-1, y);
-                    break search;
+                    if (obstacleNear(x - 1, y)) break;
+                    return swapCells(x, y, x - 1, y);
                 case 1: //right
-                    if (obstacleNear(x,y+1)) break;
-                    swapCells(x, y, x, y+1);
-                    break search;
+                    if (obstacleNear(x, y + 1)) break;
+                    return swapCells(x, y, x, y + 1);
                 case 2: //down
-                    if (obstacleNear(x+1,y)) break;
-                    swapCells(x, y, x+1, y);
-                    break search;
+                    if (obstacleNear(x + 1, y)) break;
+                    return swapCells(x, y, x + 1, y);
                 case 3: //left
-                    if (obstacleNear(x,y-1)) break;
-                    swapCells(x, y, x, y-1);
-                    break search;
+                    if (obstacleNear(x, y - 1)) break;
+                    return swapCells(x, y, x, y - 1);
                 default: //fuck.
                     break;
             }
         }
+        // no empty cell available found after a certain amount of tries
+        return new Coord(x,y);
     }
 
-    public void moveRobots(int x, int y){
+    public Coord moveRobots(int x, int y){
         //not so random. kill the bastards first if they are anywhere near.
-        if(findPlayer(x, y)) return;
-
+        Coord newCoord = findPlayer(x, y);
+        if(newCoord != null)
+            return newCoord;
         //ok, they left the building earlier. just find a suitable place to rest during the night.
-        findEmptyCell(x, y);
+        newCoord = findEmptyCell(x, y);
+        if(newCoord != null)
+            return newCoord;
+
+        // robot didn't move, keep old position
+        return new Coord(x,y);
     }
 
     // Named get*Coord and set*Coord so we don't override superclass's get* and set* methods
