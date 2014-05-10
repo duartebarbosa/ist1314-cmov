@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
 
 
 public class GameScreen extends Activity {
@@ -16,6 +17,7 @@ public class GameScreen extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game_screen);
         gameMapView = (GameMap) findViewById(R.id.view);
+        gameMapView.setMainGameScreen(this);
     }
 
 
@@ -74,6 +76,36 @@ public class GameScreen extends Activity {
         gameMapView.addBomb(gameMapView.getXCoord(), gameMapView.getYCoord());
         //TODO: change to 4 params invalidate();
         gameMapView.invalidate();
+    }
+
+
+    public void updatePlayerName(String playerName) {
+
+        TextView playerNameBoard = (TextView) findViewById(R.id.playerName);
+        playerNameBoard.setText(playerName);
+
+    }
+
+    public void updateScore(int newScore) {
+
+        TextView scoreBoard = (TextView) findViewById(R.id.playerScore);
+        scoreBoard.setText("Points: " + String.valueOf(newScore));
+
+    }
+
+
+    public void updateTimeLeft(int newTimeLeft) {
+
+        TextView timeLeftBoard = (TextView) findViewById(R.id.timeLeft);
+        timeLeftBoard.setText("time left:" + String.valueOf(newTimeLeft));
+
+    }
+
+    public void updateNumPlayers(int numPlayers) {
+
+        TextView numPlayersBoar = (TextView) findViewById(R.id.numberPlayer);
+        numPlayersBoar.setText("#players:" + String.valueOf(numPlayers));
+
     }
 
 }

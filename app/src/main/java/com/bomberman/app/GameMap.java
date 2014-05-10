@@ -1,5 +1,6 @@
 package com.bomberman.app;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -32,6 +33,8 @@ public class GameMap extends View {
         RIGHT
     }
 
+    private GameScreen mainGameScreen;
+
     private Direction bombermanDirection = Direction.DOWN;
     private Paint paint = new Paint();
 
@@ -61,6 +64,9 @@ public class GameMap extends View {
 
     private int xPlayerCoord, xPlayerCoordPrev, yPlayerCoord, yPlayerCoordPrev, xPlayerInitialCoord, yPlayerInitialCoord;
     private int playerScore = 0;
+    private int numberOfPlayers = 1; // TODO
+    private int timeLeft = 0; // TODO
+    private String playerName = "Player1"; // TODO
 
     private String levelName;
     private int gameDuration, explosionTimeout, explosionDuration, explosionRange,
@@ -116,7 +122,7 @@ public class GameMap extends View {
     }
 
     private void init(AttributeSet attrs, int defStyle) {
-
+        mainGameScreen = null;
         InputStream configFile = getResources().openRawResource(R.raw.config);
         BufferedReader input = new BufferedReader(new InputStreamReader(configFile));
 
@@ -265,6 +271,7 @@ public class GameMap extends View {
         paint.reset();
 
     }
+
 
 
     private void drawBomberman(Canvas canvas, Bitmap id){
@@ -474,6 +481,9 @@ public class GameMap extends View {
     public void setXCoord(int x) {
         this.xPlayerCoordPrev = this.xPlayerCoord;
         this.xPlayerCoord = x;
+        // this is here because moving it to onDraw() gets a NullPointerEx on layout graphic design
+        mainGameScreen.updateScore(playerScore);
+        mainGameScreen.updateTimeLeft(timeLeft);
     }
 
     public int getYCoord() {
@@ -497,6 +507,7 @@ public class GameMap extends View {
     public GameMap(Context context) {
         super(context);
         init(null, 0);
+
     }
 
     public GameMap(Context context, AttributeSet attrs) {
@@ -507,6 +518,12 @@ public class GameMap extends View {
     public GameMap(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
         init(attrs, defStyle);
+    }
+
+    public void setMainGameScreen(GameScreen a) {
+        mainGameScreen = a;
+        mainGameScreen.updateNumPlayers(numberOfPlayers);
+        mainGameScreen.updatePlayerName(playerName);
     }
 
 }

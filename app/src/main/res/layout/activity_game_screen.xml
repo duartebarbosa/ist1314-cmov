@@ -23,7 +23,8 @@
         android:id="@+id/playerScore"
         android:text="Player \nScore"
         android:layout_alignParentTop="true"
-        android:layout_toRightOf="@+id/playerName" />
+        android:layout_toRightOf="@+id/playerName"
+        android:layout_marginLeft="10px"/>
 
     <TextView
         android:layout_width="wrap_content"
@@ -31,7 +32,8 @@
         android:id="@+id/timeLeft"
         android:text="Time \nLeft"
         android:layout_alignParentTop="true"
-        android:layout_toRightOf="@+id/playerScore"  />
+        android:layout_toRightOf="@+id/playerScore"
+        android:layout_marginLeft="@dimen/activity_horizontal_margin"/>
 
     <TextView
         android:layout_width="wrap_content"
@@ -40,7 +42,8 @@
         android:text="Number of \nPlayers"
         android:layout_alignParentTop="true"
         android:layout_toRightOf="@+id/timeLeft"
-        android:layout_alignParentRight="true"/>
+        android:layout_alignParentRight="true"
+        android:layout_marginLeft="@dimen/activity_horizontal_margin" />
 
     <view
         android:layout_width="wrap_content"
