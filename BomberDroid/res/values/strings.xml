@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Bomberman</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_game_screen">GameScreen</string>
+
+
+    <string name="sendButton">Send</string>
+    <string name="connectButton">Connect</string>
+    <string name="disconnectButton">Disconnect</string>
+    <string name="serviceButton">WiFi On</string>
+    <string name="cancelButton">WiFi Off</string>
+    <string name="inRangeButton">In Range</string>
+    <string name="inGroupButton">In Network</string>
+
+    <string name="port">10001</string>
+
+</resources>

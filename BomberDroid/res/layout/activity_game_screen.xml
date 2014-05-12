@@ -1,0 +1,205 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    tools:context="com.bomberman.app.GameScreen">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/playerName"
+        android:text="Player \nName"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/playerScore"
+        android:text="Player \nScore"
+        android:layout_alignParentTop="true"
+        android:layout_toRightOf="@+id/playerName"
+        android:layout_marginLeft="10px"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/timeLeft"
+        android:text="Time \nLeft"
+        android:layout_alignParentTop="true"
+        android:layout_toRightOf="@+id/playerScore"
+        android:layout_marginLeft="@dimen/activity_horizontal_margin"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/numberPlayer"
+        android:text="Number of \nPlayers"
+        android:layout_alignParentTop="true"
+        android:layout_toRightOf="@+id/timeLeft"
+        android:layout_alignParentRight="true"
+        android:layout_marginLeft="@dimen/activity_horizontal_margin" />
+
+    <view
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        class="com.bomberman.app.GameMap"
+        android:id="@+id/view"
+        android:layout_below="@+id/playerName"
+        android:layout_above="@+id/editText2" />
+
+    <Button
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="^"
+        android:id="@+id/button2"
+        android:onClick="onClickUp"
+        android:layout_above="@+id/button3"
+        android:layout_toRightOf="@+id/button"
+ 		/>
+
+    <Button
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="&gt;"
+        android:id="@+id/button3"
+        android:onClick="onClickRight"
+        android:layout_alignTop="@+id/button4"
+        android:layout_toRightOf="@+id/button4"/>
+        <!--android:minHeight="50dp"-->
+        <!--android:minWidth="50dp" -->
+
+    <Button
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="&lt;"
+        android:id="@+id/button"
+        android:onClick="onClickLeft"
+        android:layout_alignParentBottom="true"
+        android:layout_toLeftOf="@+id/button4" />
+        <!--android:minHeight="50dp"-->
+        <!--android:minWidth="50dp" -->
+
+
+    <Button
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="v"
+        android:id="@+id/button4"
+        android:layout_alignTop="@+id/button"
+        android:layout_centerHorizontal="true"
+        android:onClick="onClickDown"/>
+        <!--android:minWidth="50dp"-->
+        <!--android:minHeight="50dp"-->
+
+
+    <Button
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Bomb"
+        android:id="@+id/button5"
+        android:layout_above="@+id/button3"
+        android:layout_toRightOf="@+id/button3"
+        android:onClick="onClickBomb" />
+
+
+    <Button
+        style="?android:attr/buttonStyleSmall"
+        android:id="@+id/idSendButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/sendButton"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
+
+    <Button
+        style="?android:attr/buttonStyleSmall"
+        android:id="@+id/idConnectButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/connectButton"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="false"
+        android:layout_above="@+id/idSendButton" />
+
+<!--     <Button -->
+<!--         android:id="@+id/idDisconnectButton" -->
+<!--         android:layout_width="wrap_content" -->
+<!--         android:layout_height="wrap_content" -->
+<!--         android:text="@string/disconnectButton" -->
+<!--         android:layout_alignTop="@+id/idConnectButton" -->
+<!--         android:layout_toRightOf="@+id/playerScore" /> -->
+
+<!--     <Button -->
+<!--         style="?android:attr/buttonStyleSmall" -->
+<!--         android:id="@+id/idWifiOnButton" -->
+<!--         android:layout_width="wrap_content" -->
+<!--         android:layout_height="wrap_content" -->
+<!--         android:text="@string/serviceButton" -->
+<!--         android:layout_alignParentBottom="false" -->
+<!--         android:layout_above="@+id/idConnectButton" -->
+<!--         android:layout_alignParentLeft="true" /> -->
+
+<!--     <Button -->
+<!--         style="?android:attr/buttonStyleSmall" -->
+<!--         android:id="@+id/idWifiOffButton" -->
+<!--         android:layout_width="wrap_content" -->
+<!--         android:layout_height="wrap_content" -->
+<!--         android:text="@string/cancelButton" -->
+<!--         android:layout_alignTop="@+id/idWifiOnButton" -->
+<!--         android:layout_toRightOf="@+id/idConnectButton" /> -->
+
+    <Button
+        style="?android:attr/buttonStyleSmall"
+        android:id="@+id/idInGroupButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/inGroupButton"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true" />
+
+    <Button
+        android:id="@+id/idInRangeButton"
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/button5"
+        android:layout_alignRight="@+id/button5"
+        android:text="@string/inRangeButton" />
+
+    <EditText
+        android:id="@+id/editText1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/idConnectButton"
+        android:layout_alignEnd="@+id/idSendButton"
+        android:layout_alignLeft="@+id/idConnectButton"
+        android:ems="10"
+        android:text="ola" />
+
+    <EditText
+        android:id="@+id/editText2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/button2"
+        android:layout_alignLeft="@+id/button5"
+        android:layout_alignParentRight="true"
+        android:layout_alignStart="@+id/idWifiOffButton"
+        android:ems="10"
+        android:inputType="textMultiLine"
+        android:text="teste" >
+        <requestFocus />
+    </EditText>
+
+</RelativeLayout>
