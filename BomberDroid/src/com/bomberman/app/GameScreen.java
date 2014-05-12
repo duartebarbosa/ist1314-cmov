@@ -74,8 +74,8 @@ public class GameScreen extends Activity
         gameMapView = (GameMap) findViewById(R.id.view);
         gameMapView.setMainGameScreen(this);
 
-        gdm = new GameDataManager();
-        thisPlayerNumber = gdm.newPlayer();
+        gdm = gameMapView.getGdm();
+        setThisPlayerNumber(-1);
         
         // initialize the UI
         guiSetButtonListeners();
@@ -92,6 +92,8 @@ public class GameScreen extends Activity
         SimWifiP2pBroadcastReceiver mReceiver = new SimWifiP2pBroadcastReceiver(this);
         registerReceiver(mReceiver, filter);
         wifiOn();
+        
+        
     }
 
 
@@ -160,26 +162,23 @@ public class GameScreen extends Activity
      * Update Game Data functions
      */
     public void updateGameData() {
-    	gdm.updatePlayerLoc(thisPlayerNumber, gameMapView.getXCoord(), gameMapView.getYCoord());
-    	
-    
+    	gdm.updatePlayerLoc(getThisPlayerNumber(), gameMapView.getXCoord(), gameMapView.getYCoord());
         try {
-            mCliSocket.getOutputStream().write( (gdm.getPlayerPos(thisPlayerNumber).toString()+"\n").getBytes());
+        	Log.d(TAG, gdm.getMsg());
+            mCliSocket.getOutputStream().write( (gdm.getMsg()).getBytes()); //TODO
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
+   
     private OnClickListener listenerSendButton = new OnClickListener() {
         @Override
         public void onClick(View v) {
             findViewById(R.id.idSendButton).setEnabled(false);
-            gdm.updatePlayerLoc(thisPlayerNumber, gameMapView.getXCoord(), gameMapView.getYCoord());
-            try {
-                mCliSocket.getOutputStream().write( (gdm.getPlayerPos(thisPlayerNumber).toString()+"\n").getBytes());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            
+            updateGameData();
+            
             mTextInput.setText("");
             findViewById(R.id.idSendButton).setEnabled(true);
             //findViewById(R.id.idDisconnectButton).setEnabled(true);
@@ -275,7 +274,7 @@ public class GameScreen extends Activity
             }
     }
     
-    private OnClickListener listenerWifiOffButton = new OnClickListener() {
+/*    private OnClickListener listenerWifiOffButton = new OnClickListener() {
         public void onClick(View v){
             if (mBound) {
                 unbindService(mConnection);
@@ -283,7 +282,7 @@ public class GameScreen extends Activity
                 guiUpdateInitState();
             }
         }
-    };
+    };*/
 
     void getInRange(){
         if (mBound) {
@@ -295,7 +294,7 @@ public class GameScreen extends Activity
     }
 
     
-    private OnClickListener listenerInRangeButton = new OnClickListener() {
+/*    private OnClickListener listenerInRangeButton = new OnClickListener() {
         public void onClick(View v){
             if (mBound) {
                 mManager.requestPeers(mChannel, (PeerListListener) GameScreen.this);
@@ -304,7 +303,7 @@ public class GameScreen extends Activity
                         Toast.LENGTH_SHORT).show();
             }
         }
-    };
+    };*/
 
     
     void getInGroup(){
@@ -317,7 +316,7 @@ public class GameScreen extends Activity
     }
     
     
-    private OnClickListener listenerInGroupButton = new OnClickListener() {
+/*    private OnClickListener listenerInGroupButton = new OnClickListener() {
         public void onClick(View v){
             if (mBound) {
                 mManager.requestGroupInfo(mChannel, (GroupInfoListener) GameScreen.this);
@@ -326,14 +325,16 @@ public class GameScreen extends Activity
                         Toast.LENGTH_SHORT).show();
             }
         }
-    };
+    };*/
 
     private OnClickListener listenerConnectButton = new OnClickListener() {
         @Override
         public void onClick(View v) {
             findViewById(R.id.idConnectButton).setEnabled(false);
             new OutgoingCommTask().execute(mTextInput.getText().toString());
+
         }
+        
     };
 
     private void disconnect(){
@@ -390,7 +391,7 @@ public class GameScreen extends Activity
 
 
 	/*
-	 * Classes implementing chat message exchange
+	 * Classes implementing message exchange
 	 */
 
     public class IncommingCommTask extends AsyncTask<Void, SimWifiP2pSocket, Void> {
@@ -502,7 +503,13 @@ public class GameScreen extends Activity
 
         @Override
         protected void onProgressUpdate(String... values) {
-            mTextOutput.append(values[0]+"\n");
+        	
+        	gdm.parseData(values[0]);
+        	
+        	mTextOutput.setText("["+getThisPlayerNumber()+"]"+gdm.getPlayerPos(getThisPlayerNumber()).getX() + "," + 
+        			gdm.getPlayerPos(getThisPlayerNumber()).getY() +"\n");
+        	
+            //mTextOutput.append(values[0]+"\n");
         }
 
         @Override
@@ -553,6 +560,14 @@ public class GameScreen extends Activity
     public void onGroupInfoAvailable(SimWifiP2pDeviceList devices,
                                      SimWifiP2pInfo groupInfo) {
 
+    	// give players numbers
+    	if (getThisPlayerNumber() == -1 && groupInfo.askIsGO()) {
+    		setThisPlayerNumber(0);
+    	}
+    	else {
+    		setThisPlayerNumber(1);
+    	}
+    	
         // compile list of network members
         StringBuilder peersStr = new StringBuilder();
         for (String deviceName : groupInfo.getDevicesInNetwork()) {
@@ -561,7 +576,7 @@ public class GameScreen extends Activity
                     ((device == null)?"??":device.getVirtIp()) + ")\n";
             peersStr.append(devstr);
         }
-
+        peersStr.append("\nI'm player " + getThisPlayerNumber());
         // display list of network members
         new AlertDialog.Builder(this)
                 .setTitle("Devices in WiFi Network")
@@ -571,6 +586,10 @@ public class GameScreen extends Activity
                     }
                 })
                 .show();
+        
+        // put players in initial position
+        gameMapView.setXCoord(gdm.getPlayerPos(thisPlayerNumber).getX());
+        gameMapView.setYCoord(gdm.getPlayerPos(thisPlayerNumber).getY());
     }
 
     /*
@@ -584,8 +603,8 @@ public class GameScreen extends Activity
         findViewById(R.id.idSendButton).setOnClickListener(listenerSendButton);
         //findViewById(R.id.idWifiOnButton).setOnClickListener(listenerWifiOnButton);
         //findViewById(R.id.idWifiOffButton).setOnClickListener(listenerWifiOffButton);
-        findViewById(R.id.idInRangeButton).setOnClickListener(listenerInRangeButton);
-        findViewById(R.id.idInGroupButton).setOnClickListener(listenerInGroupButton);
+        //findViewById(R.id.idInRangeButton).setOnClickListener(listenerInRangeButton);
+        //findViewById(R.id.idInGroupButton).setOnClickListener(listenerInGroupButton);
 
     }
 
@@ -604,8 +623,8 @@ public class GameScreen extends Activity
         findViewById(R.id.idSendButton).setEnabled(false);
         //findViewById(R.id.idWifiOnButton).setEnabled(true);
         //findViewById(R.id.idWifiOffButton).setEnabled(false);
-        findViewById(R.id.idInRangeButton).setEnabled(false);
-        findViewById(R.id.idInGroupButton).setEnabled(false);
+        //findViewById(R.id.idInRangeButton).setEnabled(false);
+        //findViewById(R.id.idInGroupButton).setEnabled(false);
 
     }
 
@@ -621,8 +640,16 @@ public class GameScreen extends Activity
         //findViewById(R.id.idDisconnectButton).setEnabled(false);
         //findViewById(R.id.idWifiOnButton).setEnabled(false);
         //findViewById(R.id.idWifiOffButton).setEnabled(true);
-        findViewById(R.id.idInRangeButton).setEnabled(true);
-        findViewById(R.id.idInGroupButton).setEnabled(true);
+        //findViewById(R.id.idInRangeButton).setEnabled(true);
+        //findViewById(R.id.idInGroupButton).setEnabled(true);
 
     }
+
+	public int getThisPlayerNumber() {
+		return thisPlayerNumber;
+	}
+
+	public void setThisPlayerNumber(int thisPlayerNumber) {
+		this.thisPlayerNumber = thisPlayerNumber;
+	}
 }

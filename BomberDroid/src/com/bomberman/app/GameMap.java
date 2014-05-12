@@ -34,6 +34,7 @@ public class GameMap extends View {
     }
 
     private GameScreen mainGameScreen;
+    private GameDataManager gdm;
 
     private Direction bombermanDirection = Direction.DOWN;
     private Paint paint = new Paint();
@@ -126,6 +127,8 @@ public class GameMap extends View {
         InputStream configFile = getResources().openRawResource(R.raw.config);
         BufferedReader input = new BufferedReader(new InputStreamReader(configFile));
 
+        setGdm(new GameDataManager());
+        
         try {
             levelName = input.readLine();
             gameDuration = Integer.parseInt(input.readLine());
@@ -150,6 +153,15 @@ public class GameMap extends View {
                     if (map[x][y] == '1') {// player 1 (us?) initial pos
                         xPlayerCoord = xPlayerCoordPrev = xPlayerInitialCoord = x;
                         yPlayerCoord = yPlayerCoordPrev = yPlayerInitialCoord = y;
+                        getGdm().newPlayer(x,y);
+                    }
+                    else if (map[x][y] == '2') {// player 2 initial pos
+                    	getGdm().newPlayer(x,y);
+
+                    }
+                    else if (map[x][y] == '3') {// player 3 initial pos
+                    	getGdm().newPlayer(x,y);
+
                     }
                     if (map[x][y] == 'R') { // create one Runnable for each robot
                         MoveRobotsRunnable runnable = new MoveRobotsRunnable(x,y);
@@ -527,5 +539,18 @@ public class GameMap extends View {
         mainGameScreen.updateNumPlayers(numberOfPlayers);
         mainGameScreen.updatePlayerName(playerName);
     }
+
+	public Object getInitialPlayerPos() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public GameDataManager getGdm() {
+		return gdm;
+	}
+
+	public void setGdm(GameDataManager gdm) {
+		this.gdm = gdm;
+	}
 
 }

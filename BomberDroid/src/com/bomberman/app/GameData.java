@@ -1,8 +1,14 @@
 package com.bomberman.app;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
-public class GameData {
+public class GameData implements Serializable {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 
 	public GameData() {
 		playerList = new ArrayList<Player>();

@@ -160,23 +160,23 @@
 <!--         android:layout_alignTop="@+id/idWifiOnButton" -->
 <!--         android:layout_toRightOf="@+id/idConnectButton" /> -->
 
-    <Button
-        style="?android:attr/buttonStyleSmall"
-        android:id="@+id/idInGroupButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/inGroupButton"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true" />
+<!--     <Button -->
+<!--         style="?android:attr/buttonStyleSmall" -->
+<!--         android:id="@+id/idInGroupButton" -->
+<!--         android:layout_width="wrap_content" -->
+<!--         android:layout_height="wrap_content" -->
+<!--         android:text="@string/inGroupButton" -->
+<!--         android:layout_alignParentBottom="true" -->
+<!--         android:layout_alignParentRight="true" /> -->
 
-    <Button
-        android:id="@+id/idInRangeButton"
-        style="?android:attr/buttonStyleSmall"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/button5"
-        android:layout_alignRight="@+id/button5"
-        android:text="@string/inRangeButton" />
+<!--     <Button -->
+<!--         android:id="@+id/idInRangeButton" -->
+<!--         style="?android:attr/buttonStyleSmall" -->
+<!--         android:layout_width="wrap_content" -->
+<!--         android:layout_height="wrap_content" -->
+<!--         android:layout_above="@+id/button5" -->
+<!--         android:layout_alignRight="@+id/button5" -->
+<!--         android:text="@string/inRangeButton" /> -->
 
     <EditText
         android:id="@+id/editText1"

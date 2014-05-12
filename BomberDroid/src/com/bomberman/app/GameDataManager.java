@@ -25,11 +25,11 @@ public class GameDataManager {
 	}
 
 
-	public int newPlayer() {
+	public int newPlayer(int x, int y) {
 		GameData.Player pl = gd.new Player();
 
 		GameData.Pos plPos = gd.new Pos();
-		updatePos(plPos, 0, 0);
+		updatePos(plPos, x, y);
 		pl.setPlayerPos(plPos);
 		
 		gd.getPlayerList().add(pl);
@@ -52,5 +52,25 @@ public class GameDataManager {
 	public Pos getPlayerPos(int playerNum) {
 		
 		return gd.getPlayerList().get(playerNum).getPlayerPos();
+	}
+
+	public void parseData(String string) {
+		// get players positions
+		String aux[] = string.split(" ");
+		for (int i = 0; i < gd.getPlayerList().size();++i){ 
+			updatePlayerLoc(i,Integer.parseInt(aux[i*2+0]),Integer.parseInt(aux[i*2+1]));
+		}
+		
+	}
+
+	public String getMsg() {
+		String message = "";
+		
+		for (int i = 0; i < gd.getPlayerList().size();++i){
+			message += gd.getPlayerList().get(i).getPlayerPos().getX() + " " +
+						gd.getPlayerList().get(i).getPlayerPos().getY() + " ";
+		}
+		message += "\n";
+		return message;
 	}
 }
