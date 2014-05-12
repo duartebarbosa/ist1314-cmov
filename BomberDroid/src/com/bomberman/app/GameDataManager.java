@@ -54,10 +54,12 @@ public class GameDataManager {
 		return gd.getPlayerList().get(playerNum).getPlayerPos();
 	}
 
-	public void parseData(String string) {
+	public void parseData(String string, int myPlayer) {
 		// get players positions
 		String aux[] = string.split(" ");
-		for (int i = 0; i < gd.getPlayerList().size();++i){ 
+		for (int i = 0; i < gd.getPlayerList().size();++i){
+			if (i == myPlayer)
+				continue;
 			updatePlayerLoc(i,Integer.parseInt(aux[i*2+0]),Integer.parseInt(aux[i*2+1]));
 		}
 		

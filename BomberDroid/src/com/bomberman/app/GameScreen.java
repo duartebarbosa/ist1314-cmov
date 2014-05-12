@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.UnknownHostException;
+import java.security.acl.Owner;
 
 import pt.utl.ist.cmov.wifidirect.SimWifiP2pBroadcast;
 import pt.utl.ist.cmov.wifidirect.SimWifiP2pDevice;
@@ -17,7 +18,6 @@ import pt.utl.ist.cmov.wifidirect.sockets.SimWifiP2pSocketServer;
 import pt.utl.ist.cmov.wifidirect.SimWifiP2pDeviceList;
 import pt.utl.ist.cmov.wifidirect.SimWifiP2pManager.PeerListListener;
 import pt.utl.ist.cmov.wifidirect.SimWifiP2pManager.GroupInfoListener;
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ComponentName;
@@ -26,7 +26,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
-
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -56,9 +55,10 @@ public class GameScreen extends Activity
     private TextView mTextOutput;
     
     private GameDataManager gdm;
-    
     private int thisPlayerNumber;
-
+    private String groupOwner = "192.168.0.1"; //TODO fazer janela a mostrar e selecionar isto
+    
+    
     public SimWifiP2pManager getManager() {
         return mManager;
     }
@@ -92,8 +92,6 @@ public class GameScreen extends Activity
         SimWifiP2pBroadcastReceiver mReceiver = new SimWifiP2pBroadcastReceiver(this);
         registerReceiver(mReceiver, filter);
         wifiOn();
-        
-        
     }
 
 
@@ -331,7 +329,7 @@ public class GameScreen extends Activity
         @Override
         public void onClick(View v) {
             findViewById(R.id.idConnectButton).setEnabled(false);
-            new OutgoingCommTask().execute(mTextInput.getText().toString());
+            new OutgoingCommTask().execute(groupOwner);
 
         }
         
@@ -504,10 +502,18 @@ public class GameScreen extends Activity
         @Override
         protected void onProgressUpdate(String... values) {
         	
-        	gdm.parseData(values[0]);
+        	// parse received message, don0t change this player data
+        	gdm.parseData(values[0], thisPlayerNumber);
         	
-        	mTextOutput.setText("["+getThisPlayerNumber()+"]"+gdm.getPlayerPos(getThisPlayerNumber()).getX() + "," + 
-        			gdm.getPlayerPos(getThisPlayerNumber()).getY() +"\n");
+        	int otherPlayer;
+        	//TODO fix this to allow several players
+        	if (getThisPlayerNumber() == 0)
+        		otherPlayer =1;
+        	else
+        		otherPlayer = 0;
+        	
+        	mTextOutput.setText("["+getThisPlayerNumber()+"]"+gdm.getPlayerPos(otherPlayer).getX() + "," + 
+        			gdm.getPlayerPos(otherPlayer).getY() +"\n");
         	
             //mTextOutput.append(values[0]+"\n");
         }
