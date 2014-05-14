@@ -54,25 +54,7 @@ public class GameDataManager {
 		return gd.getPlayerList().get(playerNum).getPlayerPos();
 	}
 
-	public void parseData(String string, int myPlayer) {
-		// get players positions
-		String aux[] = string.split(" ");
-		for (int i = 0; i < gd.getPlayerList().size();++i){
-			if (i == myPlayer)
-				continue;
-			updatePlayerLoc(i,Integer.parseInt(aux[i*2+0]),Integer.parseInt(aux[i*2+1]));
-		}
-		
-	}
 
-	public String getMsg() {
-		String message = "";
-		
-		for (int i = 0; i < gd.getPlayerList().size();++i){
-			message += gd.getPlayerList().get(i).getPlayerPos().getX() + " " +
-						gd.getPlayerList().get(i).getPlayerPos().getY() + " ";
-		}
-		message += "\n";
-		return message;
-	}
+
+
 }

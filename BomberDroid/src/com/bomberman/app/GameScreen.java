@@ -162,14 +162,26 @@ public class GameScreen extends Activity
     public void updateGameData() {
     	gdm.updatePlayerLoc(getThisPlayerNumber(), gameMapView.getXCoord(), gameMapView.getYCoord());
         try {
-        	Log.d(TAG, gdm.getMsg());
-            mCliSocket.getOutputStream().write( (gdm.getMsg()).getBytes()); //TODO
+        	Log.d(TAG, getMsg(gameMapView.getMap()));
+            mCliSocket.getOutputStream().write( (getMsg(gameMapView.getMap())).getBytes()); //TODO
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
    
+	public String getMsg(int[][] matrix) {
+		String message = "";
+		
+		for (int i = 0; i < gameMapView.getNUM_ROWS(); i++){
+			for (int j = 0; j < gameMapView.getNUM_COLUMNS(); j++) {
+				message += matrix[i][j] + " ";
+			}
+		}
+		
+		return message;
+	}
+    
     private OnClickListener listenerSendButton = new OnClickListener() {
         @Override
         public void onClick(View v) {
@@ -503,7 +515,7 @@ public class GameScreen extends Activity
         protected void onProgressUpdate(String... values) {
         	
         	// parse received message, don0t change this player data
-        	gdm.parseData(values[0], thisPlayerNumber);
+        	parseData(values[0], thisPlayerNumber);
         	
         	int otherPlayer;
         	//TODO fix this to allow several players
@@ -518,6 +530,23 @@ public class GameScreen extends Activity
             //mTextOutput.append(values[0]+"\n");
         }
 
+        
+    	public void parseData(String string, int myPlayer) {
+    		String aux[] = string.split(" ");
+    		int k=0;
+    		
+    		int receivedMap[][] = new int [gameMapView.getNUM_ROWS()][gameMapView.getNUM_COLUMNS()];
+    		
+    		for (int i = 0; i < gameMapView.getNUM_ROWS(); i++){
+    			for (int j = 0; j < gameMapView.getNUM_COLUMNS(); j++) {
+    				receivedMap[i][j] = Integer.parseInt(aux[k++]);
+    			}
+    		}
+    		gameMapView.setMap(receivedMap);
+    		//gameMapView.
+    	}
+    	
+    	
         @Override
         protected void onPostExecute(Void result) {
             if (!s.isClosed()) {
@@ -606,7 +635,7 @@ public class GameScreen extends Activity
 
         findViewById(R.id.idConnectButton).setOnClickListener(listenerConnectButton);
         //findViewById(R.id.idDisconnectButton).setOnClickListener(listenerDisconnectButton);
-        findViewById(R.id.idSendButton).setOnClickListener(listenerSendButton);
+        //findViewById(R.id.idSendButton).setOnClickListener(listenerSendButton);
         //findViewById(R.id.idWifiOnButton).setOnClickListener(listenerWifiOnButton);
         //findViewById(R.id.idWifiOffButton).setOnClickListener(listenerWifiOffButton);
         //findViewById(R.id.idInRangeButton).setOnClickListener(listenerInRangeButton);
@@ -626,7 +655,7 @@ public class GameScreen extends Activity
 
         findViewById(R.id.idConnectButton).setEnabled(false);
         //findViewById(R.id.idDisconnectButton).setEnabled(false);
-        findViewById(R.id.idSendButton).setEnabled(false);
+        //findViewById(R.id.idSendButton).setEnabled(false);
         //findViewById(R.id.idWifiOnButton).setEnabled(true);
         //findViewById(R.id.idWifiOffButton).setEnabled(false);
         //findViewById(R.id.idInRangeButton).setEnabled(false);
@@ -641,7 +670,7 @@ public class GameScreen extends Activity
         mTextOutput.setEnabled(true);
         mTextOutput.setText("");
 
-        findViewById(R.id.idSendButton).setEnabled(false);
+        //findViewById(R.id.idSendButton).setEnabled(false);
         findViewById(R.id.idConnectButton).setEnabled(true);
         //findViewById(R.id.idDisconnectButton).setEnabled(false);
         //findViewById(R.id.idWifiOnButton).setEnabled(false);
@@ -657,5 +686,11 @@ public class GameScreen extends Activity
 
 	public void setThisPlayerNumber(int thisPlayerNumber) {
 		this.thisPlayerNumber = thisPlayerNumber;
+	}
+
+	public void sendMap() {
+		
+		// TODO Auto-generated method stub
+		
 	}
 }
