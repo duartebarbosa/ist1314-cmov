@@ -1,11 +1,11 @@
-Level name
-60
-5
-5
-2
 1
-5
+120
+2
+2
+4
+0.5
 10
+100
 WWWWWWWWWWWWWWWWWWW
 W-2-----R----O----W
 WWOW-W-W-W-W-W-W-WW

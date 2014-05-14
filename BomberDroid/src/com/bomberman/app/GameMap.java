@@ -32,6 +32,14 @@ public class GameMap extends View {
         TOP,
         RIGHT
     }
+    
+    // bitmask to represent who's on a certain cell
+    // (those who can be on top of each other):
+    //             Explosion Wall Obstacle Bomb  Robot P4   P3    P2    P1
+    // bitmask:  ...   0      0      0     0     0     0     0     0     0
+    // bit no.   ...   8      7      6     5     4     3     2     1     0(LSB)
+    // inspired by http://www.ugrad.cs.ubc.ca/~cs490/sec202/notes/intro/bitmask.pdf
+    private int cellBitmask;
 
     private GameScreen mainGameScreen;
     private GameDataManager gdm;
@@ -58,10 +66,10 @@ public class GameMap extends View {
     private final Bitmap explosionCenterBitmap = createBombBitmap(150, 30, 16, 16);
     private final Bitmap explosionHorizontalBitmap = createBombBitmap(180, 60, 16, 16);
     private final Bitmap explosionVerticalBitmap = createBombBitmap(180, 0, 16, 16);
-    private final Bitmap explosionLeftBitmap = createBombBitmap(120, 30, 16, 16);
-    private final Bitmap explosionRightBitmap = createBombBitmap(180, 30, 16, 16);
+    private final Bitmap explosionLeftBitmap = createBombBitmap(118, 30, 16, 16);
+    private final Bitmap explosionRightBitmap = createBombBitmap(181, 30, 16, 16);
     private final Bitmap explosionTopBitmap = createBombBitmap(150, 0, 16, 16);
-    private final Bitmap explosionBottomBitmap = createBombBitmap(150, 60, 16, 16);
+    private final Bitmap explosionBottomBitmap = createBombBitmap(150, 62, 16, 14);
 
     private int xPlayerCoord, xPlayerCoordPrev, yPlayerCoord, yPlayerCoordPrev, xPlayerInitialCoord, yPlayerInitialCoord;
     private int playerScore = 0;
@@ -70,7 +78,7 @@ public class GameMap extends View {
     private String playerName = "Player1"; // TODO
 
     private String levelName;
-    private int gameDuration, explosionTimeout, explosionDuration, explosionRange,
+    private float gameDuration, explosionTimeout, explosionDuration, explosionRange,
             robotSpeed, pointsPerRobotKilled, pointsPerOpponentKilled;
 
     private int[][] map;    // keep map config internally
@@ -89,12 +97,16 @@ public class GameMap extends View {
         }
 
         public void run() {
-            Coord newCoord = moveRobots(x,y);
-            x = newCoord.x;
-            y = newCoord.y;
-            //killPlayer(x, y);
-            invalidate();
-            handler.postDelayed(this, 1000/robotSpeed);
+        	// make sure the robot is still at this position - it could've been killed
+        	// between last execution of the Runnable and this one
+        	if((map[x][y] & (1<<4)) != 0) {	
+        		Coord newCoord = moveRobots(x,y);
+	            x = newCoord.x;
+	            y = newCoord.y;
+	            //killPlayer(x, y);
+	            invalidate();
+	            handler.postDelayed(this, (long) (1000/robotSpeed));
+        	}
         }
     }
 
@@ -124,20 +136,20 @@ public class GameMap extends View {
 
     private void init(AttributeSet attrs, int defStyle) {
         mainGameScreen = null;
-        InputStream configFile = getResources().openRawResource(R.raw.config);
+        InputStream configFile = getResources().openRawResource(R.raw.config2);
         BufferedReader input = new BufferedReader(new InputStreamReader(configFile));
 
         setGdm(new GameDataManager());
         
         try {
             levelName = input.readLine();
-            gameDuration = Integer.parseInt(input.readLine());
-            explosionTimeout = Integer.parseInt(input.readLine());
-            explosionDuration = Integer.parseInt(input.readLine());
-            explosionRange = Integer.parseInt(input.readLine());
-            robotSpeed = Integer.parseInt(input.readLine());
-            pointsPerRobotKilled = Integer.parseInt(input.readLine());
-            pointsPerOpponentKilled = Integer.parseInt(input.readLine());
+            gameDuration = Float.parseFloat(input.readLine());
+            explosionTimeout = Float.parseFloat(input.readLine());
+            explosionDuration = Float.parseFloat(input.readLine());
+            explosionRange = Float.parseFloat(input.readLine());
+            robotSpeed = Float.parseFloat(input.readLine());
+            pointsPerRobotKilled = Float.parseFloat(input.readLine());
+            pointsPerOpponentKilled = Float.parseFloat(input.readLine());
 
             input.mark(10000);
             NUM_COLUMNS = input.readLine().length();
@@ -149,24 +161,35 @@ public class GameMap extends View {
             for(int x = 0; (line = input.readLine()) != null; x++){
                 char[] row = line.toCharArray();
                 for(int y = 0; y < NUM_COLUMNS; y++){
-                    map[x][y] = row[y];
-                    if (map[x][y] == '1') {// player 1 (us?) initial pos
-                        xPlayerCoord = xPlayerCoordPrev = xPlayerInitialCoord = x;
+                	
+                	//map[x][y] = row[y];
+                	
+                	if(row[y] == '1') {
+                		xPlayerCoord = xPlayerCoordPrev = xPlayerInitialCoord = x;
                         yPlayerCoord = yPlayerCoordPrev = yPlayerInitialCoord = y;
+                        map[x][y] = (1 << 0);
                         getGdm().newPlayer(x,y);
-                    }
-                    else if (map[x][y] == '2') {// player 2 initial pos
-                    	getGdm().newPlayer(x,y);
-
-                    }
-                    else if (map[x][y] == '3') {// player 3 initial pos
-                    	getGdm().newPlayer(x,y);
-
-                    }
-                    if (map[x][y] == 'R') { // create one Runnable for each robot
-                        MoveRobotsRunnable runnable = new MoveRobotsRunnable(x,y);
-                        handler.postDelayed(runnable, 1000/robotSpeed);
-                    }
+                	} else if(row[y] == '2') {
+                		map[x][y] = (1 << 1);
+                		getGdm().newPlayer(x,y);
+                	} else if(row[y] == '3') {
+                		map[x][y] = (1 << 2);
+                		getGdm().newPlayer(x,y);
+                	} else if(row[y] == '4') {
+                		map[x][y] = (1 << 3);
+                		getGdm().newPlayer(x,y);
+                	} else if(row[y] == 'R') {
+                		map[x][y] = (1 << 4);
+                		// create one Runnable for each robot
+                		MoveRobotsRunnable runnable = new MoveRobotsRunnable(x,y);
+                        handler.postDelayed(runnable, (long) (1000/robotSpeed));
+                	} else if(row[y] == 'O')
+                		map[x][y] = (1 << 6);
+                	else if(row[y] == 'W')
+                		map[x][y] = (1 << 7);
+                	else if(row[y] == '-')	// and replace '-' for 0 so it doesn't interfere with the bitmask
+                		map[x][y] = 0;
+                	
                 }
             }
 
@@ -180,81 +203,87 @@ public class GameMap extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
-        //idealmente - à excepção da bomba - isto só se faz uma vez..
+        // desenhar fundo antes de tudo o resto - evita que explosoes sejam
+        // desenhadas (na itera�ao x,y) antes do fundo que vai ser desenhado
+        // em itera�oes seguintes (x+i e y+i)
         for (int x = 0; x < NUM_ROWS; x++) {
             int x_float = x * CELL_SIZE;
             for (int y = 0 ; y < NUM_COLUMNS; y++) {
                 int y_float = y * CELL_SIZE;
                 paint.setColor(getResources().getColor(android.R.color.holo_green_dark));
-                paint.setAlpha(60);
                 canvas.drawRect(y_float, x_float, y_float + CELL_SIZE, x_float + CELL_SIZE, paint);
                 paint.reset();
-                switch (map[x][y]) {
-                    case 'O':
-                        canvas.drawBitmap(obstacleBitmap, y_float, x_float, paint);
-                        break;
-                    case 'W':
-                        canvas.drawBitmap(wallBitmap, y_float, x_float, paint);
-                        break;
-                    case 'R':
-                        canvas.drawBitmap(enemyBitmap, y_float, x_float, paint);
-                        break;
-                    case 'B':
-                        canvas.drawBitmap(bombBitmap, y_float, x_float, paint);
-                        break;
-                    case 'E':
+            }
+        }
+        
+        //idealmente - à excepção da bomba - isto só se faz uma vez..
+        for (int x = 0; x < NUM_ROWS; x++) {
+            int x_float = x * CELL_SIZE;
+            for (int y = 0 ; y < NUM_COLUMNS; y++) {
+                int y_float = y * CELL_SIZE;
+                
+	            if((map[x][y] & (1 << 4)) != 0)
+	                canvas.drawBitmap(enemyBitmap, y_float, x_float, paint);
+	            
+	            if((map[x][y] & (1 << 5)) != 0)
+	            	canvas.drawBitmap(bombBitmap, y_float, x_float, paint);
+                
+	            if((map[x][y] & (1 << 6)) != 0)
+                	canvas.drawBitmap(obstacleBitmap, y_float, x_float, paint);
+                
+                if((map[x][y] & (1 << 7)) != 0)
+                	canvas.drawBitmap(wallBitmap, y_float, x_float, paint);
+                
+                if((map[x][y] & (1 << 8)) != 0) {
                         int i = 1;
                         boolean stopExplosionSouth,stopExplosionNorth,stopExplosionWest,stopExplosionEast;
                         stopExplosionEast=stopExplosionNorth=stopExplosionSouth=stopExplosionWest=false;
                         for(; i < explosionRange; i++){
                             if(y-i >= 0)
-                                if(map[x][y-i] != 'W' && !stopExplosionWest)
+                                if((map[x][y-i] & (1<<7)) == 0 && !stopExplosionWest)
                                     canvas.drawBitmap(explosionHorizontalBitmap, (y-i) * CELL_SIZE, x_float, paint);
                                 else
                                     stopExplosionWest = true;
                             if(y+i < NUM_COLUMNS)
-                                if(map[x][y+i] != 'W' && !stopExplosionEast)
+                                if((map[x][y+i] & (1<<7)) == 0 && !stopExplosionEast)
                                     canvas.drawBitmap(explosionHorizontalBitmap, (y+i) * CELL_SIZE, x_float, paint);
                                 else
                                     stopExplosionEast = true;
                             if(x-i >= 0)
-                                if(map[x-i][y] != 'W' && !stopExplosionNorth)
+                                if((map[x-i][y] & (1<<7)) == 0 && !stopExplosionNorth)
                                     canvas.drawBitmap(explosionVerticalBitmap, y_float, (x-i) * CELL_SIZE, paint);
                                 else
                                     stopExplosionNorth = true;
                             if(x+i < NUM_ROWS)
-                                if(map[x+i][y] != 'W' && !stopExplosionSouth)
+                                if((map[x+i][y] & (1<<7)) == 0 && !stopExplosionSouth)
                                     canvas.drawBitmap(explosionVerticalBitmap, y_float, (x+i) * CELL_SIZE, paint);
                                 else
                                     stopExplosionSouth = true;
                         }
                         if(x-i >= 0)
-                            if(map[x-i][y] != 'W' && !stopExplosionNorth)
+                            if((map[x-i][y] & (1<<7)) == 0 && !stopExplosionNorth)
                                 canvas.drawBitmap(explosionTopBitmap, y_float, (x-i) * CELL_SIZE, paint);
                         if(y-i >= 0)
-                            if(map[x][y-i] != 'W' && !stopExplosionWest)
+                            if((map[x][y-i] & (1<<7)) == 0 && !stopExplosionWest)
                                 canvas.drawBitmap(explosionLeftBitmap, (y-i) * CELL_SIZE, x_float, paint);
                         if(y+i < NUM_COLUMNS)
-                            if(map[x][y+i] != 'W' && !stopExplosionEast)
+                            if((map[x][y+i] & (1<<7)) == 0 && !stopExplosionEast)
                                 canvas.drawBitmap(explosionRightBitmap, (y+i) * CELL_SIZE, x_float, paint);
                         if(x+i < NUM_ROWS)
-                            if(map[x+i][y] != 'W' && !stopExplosionSouth)
+                            if((map[x+i][y] & (1<<7)) == 0 && !stopExplosionSouth)
                                 canvas.drawBitmap(explosionBottomBitmap, y_float, (x+i) * CELL_SIZE, paint);
                         canvas.drawBitmap(explosionCenterBitmap, y_float, x_float, paint);
 
-                        destroy('O',x,y,canvas);
-                        destroy('R', x, y, canvas);
+                        destroy((1<<6) ,x, y, canvas);
+                        destroy((1<<4), x, y, canvas);
                         killPlayer(x, y, canvas);
-                        break;
-                    default:
-                        break;
                 }
+
             }
         }
 
-        if(map[xPlayerCoord][yPlayerCoord] == 'O' || map[xPlayerCoord][yPlayerCoord] == 'W') { // invalid movement, rewind
-            xPlayerCoord = xPlayerCoordPrev;
-            yPlayerCoord = yPlayerCoordPrev;
+        if((map[xPlayerCoord][yPlayerCoord] & (1<<6)) != 0 || (map[xPlayerCoord][yPlayerCoord] & (1<<7)) != 0 || (map[xPlayerCoord][yPlayerCoord] & (1<<5)) != 0) { // invalid movement, rewind
+            updatePlayerCoords(xPlayerCoordPrev, yPlayerCoordPrev);
         }
 
         switch (bombermanDirection) {
@@ -293,26 +322,27 @@ public class GameMap extends View {
     }
 
     public void addBomb(final int x, final int y){
-        map[x][y] = 'B';
+        cellBitmask = (cellBitmask | (1 << 5));
+    	map[x][y] = cellBitmask;
 
         Runnable startExplosion = new Runnable() {
             @Override
             public void run() {
-                map[x][y] = 'E';
+                map[x][y] = (1<<8);
                 invalidate();
             }
         };
         Runnable endExplosion = new Runnable() {
             @Override
             public void run() {
-                map[x][y] = '-';
+                map[x][y] = 0;
                 //killPlayer(x, y);
                 invalidate();
             }
         };
 
-        handler.postDelayed(startExplosion, explosionTimeout*1000);
-        handler.postDelayed(endExplosion, explosionTimeout*1000 + explosionDuration*1000);
+        handler.postDelayed(startExplosion, (long) (explosionTimeout*1000));
+        handler.postDelayed(endExplosion, (long) (explosionTimeout*1000 + explosionDuration*1000));
 
     }
 
@@ -325,8 +355,7 @@ public class GameMap extends View {
                     (xPlayerCoord == x + i && yPlayerCoord == y) ||
                     (xPlayerCoord == x && yPlayerCoord == y - i) ||
                     (xPlayerCoord == x && yPlayerCoord == y + i)) {
-                xPlayerCoord = xPlayerInitialCoord;
-                yPlayerCoord = yPlayerInitialCoord;
+                updatePlayerCoords(xPlayerInitialCoord, yPlayerInitialCoord);
                 paint.setColor(Color.BLACK);
                 paint.setStyle(Paint.Style.FILL);
                 paint.setTextSize(20);
@@ -337,12 +366,11 @@ public class GameMap extends View {
         }
 
         // collision with robots
-        if (((y-1 >= 0) && (map[x][y-1] == 'R')) ||
-            ((y+1 < NUM_COLUMNS) && (map[x][y+1] == 'R')) ||
-            ((x-1 >= 0) && (map[x-1][y] == 'R')) ||
-            ((x+1 < NUM_ROWS) && (map[x+1][y] == 'R'))) {
-            xPlayerCoord = xPlayerInitialCoord;
-            yPlayerCoord = yPlayerInitialCoord;
+        if (((y-1 >= 0) && ((map[x][y-1] & (1 << 4)) != 0)) ||
+            ((y+1 < NUM_COLUMNS) && ((map[x][y+1] & (1 << 4)) != 0)) ||
+            ((x-1 >= 0) && ((map[x-1][y] & (1 << 4)) != 0)) ||
+            ((x+1 < NUM_ROWS) && ((map[x+1][y] & (1 << 4)) != 0))) {
+        	updatePlayerCoords(xPlayerInitialCoord, yPlayerInitialCoord);
             paint.setColor(Color.BLACK);
             paint.setStyle(Paint.Style.FILL);
             paint.setTextSize(20);
@@ -352,44 +380,50 @@ public class GameMap extends View {
         }
     }
 
-    private void destroy(char object, int x, int y, Canvas canvas) {
+    // TODO: object can only be (1<<6) (obstacle) or (1<<4) (robot) - we should add players too!
+    private void destroy(int object, int x, int y, Canvas canvas) {
         boolean stopDestroyingSouth,stopDestroyingNorth,stopDestroyingWest,stopDestroyingEast;
         stopDestroyingEast=stopDestroyingNorth=stopDestroyingSouth=stopDestroyingWest=false;
         for(int i = 1 ; i <= explosionRange; i++) {
             if(x-i >= 0)
-                if (map[x-i][y] != 'W' && !stopDestroyingNorth) {
-                    if(map[x-i][y] == object) {
-                        map[x - i][y] = '-';
-                        if (object == 'R')
-                            playerScore += pointsPerRobotKilled;
+                if ((map[x-i][y] & (1<<7)) == 0 && !stopDestroyingNorth) {
+                    if((map[x-i][y] & (1<<6)) != 0)
+                        map[x-i][y] = 0;
+                    if((map[x-i][y] & (1<<4)) != 0) {
+                    	map[x-i][y] = (map[x-i][y] - (1<<4));
+                        playerScore += pointsPerRobotKilled;
                     }
+                    
                 } else
                     stopDestroyingNorth = true;
             //Log.d("GameMap.Java", "x="+x+"    i="+i+"   NUM_COLUMNS="+NUM_COLUMNS+"      NUM_ROWS="+NUM_ROWS);
             if(x+i < NUM_ROWS)
-                if (map[x+i][y] != 'W' && !stopDestroyingSouth){
-                    if(map[x+i][y] == object) {
-                        map[x + i][y] = '-';
-                        if (object == 'R')
-                            playerScore += pointsPerRobotKilled;
+                if ((map[x+i][y] & (1<<7)) == 0 && !stopDestroyingSouth){
+                	if((map[x+i][y] & (1<<6)) != 0)
+                        map[x+i][y] = 0;
+                    if((map[x+i][y] & (1<<4)) != 0) {
+                    	map[x+i][y] = (map[x+i][y] - (1<<4));
+                        playerScore += pointsPerRobotKilled;
                     }
                 } else
                     stopDestroyingSouth = true;
             if(y-i >= 0)
-                if (map[x][y-i] != 'W' && !stopDestroyingEast) {
-                    if(map[x][y-i] == object) {
-                        map[x][y - i] = '-';
-                        if (object == 'R')
-                            playerScore += pointsPerRobotKilled;
+                if ((map[x][y-i] & (1<<7)) == 0 && !stopDestroyingEast) {
+                	if((map[x][y-i] & (1<<6)) != 0)
+                        map[x][y-i] = 0;
+                    if((map[x][y-i] & (1<<4)) != 0) {
+                    	map[x][y-i] = (map[x][y-i] - (1<<4));
+                        playerScore += pointsPerRobotKilled;
                     }
                 } else
                     stopDestroyingEast = true;
             if(y+i < NUM_COLUMNS)
-                if (map[x][y+i] != 'W' && !stopDestroyingWest){
-                    if(map[x][y+i] == object) {
-                        map[x][y + i] = '-';
-                        if (object == 'R')
-                            playerScore += pointsPerRobotKilled;
+                if ((map[x][y+i] & (1<<7)) == 0 && !stopDestroyingWest){
+                	if((map[x][y+i] & (1<<6)) != 0)
+                        map[x][y+i] = 0;
+                    if((map[x][y+i] & (1<<4)) != 0) {
+                    	map[x][y+i] = (map[x][y+i] - (1<<4));
+                        playerScore += pointsPerRobotKilled;
                     }
                 } else
                     stopDestroyingWest = true;
@@ -397,19 +431,19 @@ public class GameMap extends View {
         }
     }
 
-    // TODO: check maximum number of players - we assume 3 here
-    // TODO: isto n funca pq n actualizamos o '1' no map[][], so a xPlayerCoord e yPlayerCoord
+    // TODO: check maximum number of players - we assume 4 here
     private Boolean playerNear(int x, int y){
         if ((y >= 0) && (y < NUM_COLUMNS) && (x >= 0) && (x < NUM_ROWS))
-            return (map[x][y] >= '1' && map[x][y] <= '3')? true : false;
+            return ((map[x][y] & (1<<0)) != 0 || (map[x][y] & (1<<1)) != 0
+            	 || (map[x][y] & (1<<2)) != 0 || (map[x][y] & (1<<3)) != 0)? true : false;
         else
             return false;
     }
 
-    // invalid movement, rewind
+    // invalid movement, rewind (avoid Walls, Obstacles, Bombs and other Robots(so they don't mesh into one)
     private Boolean obstacleNear(int x, int y){
         if ((y >= 0) && (y < NUM_COLUMNS) && (x >= 0) && (x < NUM_ROWS))
-            return (map[x][y] == 'O' || map[x][y] == 'W')? true : false;
+            return ((map[x][y] & (1<<6)) != 0 || (map[x][y] & (1<<7)) != 0 || (map[x][y] & (1<<4)) != 0 || (map[x][y] & (1<<5)) != 0)? true : false;
         else
             return false;
     }
@@ -417,7 +451,7 @@ public class GameMap extends View {
     private Coord swapCells(int x, int y, int x_new, int y_new){
         if ((y_new >= 0) && (y_new < NUM_COLUMNS) && (x_new >= 0) && (x_new < NUM_ROWS)) {
             map[x_new][y_new] = map[x][y];
-            map[x][y] = '-';
+            map[x][y] = 0;
             return new Coord(x_new,y_new);
         } else
             return null;
@@ -425,24 +459,24 @@ public class GameMap extends View {
 
     private Coord findPlayer(int x, int y){
         //top;
-        if(playerNear(x-2, y)) {
+        if(playerNear(x-2, y) && !obstacleNear(x-1, y)) {
             //killPlayer();
-            return swapCells(x, y, x-2, y);
+            return swapCells(x, y, x-1, y);
         }
         //right;
-        if(playerNear(x, y+2)) {
+        if(playerNear(x, y+2) && !obstacleNear(x, y+1)) {
             //killPlayer();
-            return swapCells(x, y, x, y+2);
+            return swapCells(x, y, x, y+1);
         }
         //down;
-        if(playerNear(x+2, y)) {
+        if(playerNear(x+2, y) && !obstacleNear(x+1, y)) {
             //killPlayer();
-            return swapCells(x, y, x+2, y);
+            return swapCells(x, y, x+1, y);
         }
         //left;
-        if(playerNear(x, y-2)) {
+        if(playerNear(x, y-2) && !obstacleNear(x, y-1)) {
             //killPlayer();
-            return swapCells(x, y, x, y-2);
+            return swapCells(x, y, x, y-1);
         }
         return null;
     }
@@ -493,8 +527,9 @@ public class GameMap extends View {
     }
 
     public void setXCoord(int x) {
-        this.xPlayerCoordPrev = this.xPlayerCoord;
-        this.xPlayerCoord = x;
+        this.xPlayerCoordPrev = getXCoord();
+        updatePlayerCoords(x,getYCoord());
+        
         // this is here because moving it to onDraw() gets a NullPointerEx on layout graphic design
         mainGameScreen.updateScore(playerScore);
         mainGameScreen.updateTimeLeft(timeLeft);
@@ -505,8 +540,15 @@ public class GameMap extends View {
     }
 
     public void setYCoord(int y) {
-        this.yPlayerCoordPrev = this.yPlayerCoord;
-        this.yPlayerCoord = y;
+        this.yPlayerCoordPrev = getYCoord();
+        updatePlayerCoords(getXCoord(),y);
+    }
+    
+    void updatePlayerCoords(int x, int y) {
+    	xPlayerCoord = x;
+        yPlayerCoord = y;
+        map[xPlayerCoord][yPlayerCoord] = (map[xPlayerCoord][yPlayerCoord] | (1<<0));
+    	
     }
 
     public Direction getBombermanDirection() {
