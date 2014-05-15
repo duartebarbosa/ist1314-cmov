@@ -57,7 +57,7 @@ public class GameScreen extends Activity
     private GameDataManager gdm;
     private int thisPlayerNumber;
     private String groupOwner = "192.168.0.1"; //TODO fazer janela a mostrar e selecionar isto
-    
+    public  boolean connected;
     
     public SimWifiP2pManager getManager() {
         return mManager;
@@ -73,7 +73,8 @@ public class GameScreen extends Activity
         setContentView(R.layout.activity_game_screen);
         gameMapView = (GameMap) findViewById(R.id.view);
         gameMapView.setMainGameScreen(this);
-
+        connected = false;
+        
         gdm = gameMapView.getGdm();
         setThisPlayerNumber(-1);
         
@@ -160,6 +161,14 @@ public class GameScreen extends Activity
      * Update Game Data functions
      */
     public void updateGameData() {
+        // se for o servidor manda o jogo todo
+        if (thisPlayerNumber == 0)
+        	sendMap();
+        // jogadores só mandam as coordenadas do seu jogador
+        else sendMsgCoord();
+    }
+    	
+    public void sendMap() {
     	gdm.updatePlayerLoc(getThisPlayerNumber(), gameMapView.getXCoord(), gameMapView.getYCoord());
         try {
         	Log.d(TAG, gdm.getMsg());
@@ -188,14 +197,33 @@ public class GameScreen extends Activity
         @Override
         public void onClick(View v) {
             findViewById(R.id.idSendButton).setEnabled(false);
-            
+
             updateGameData();
-            
+
             //mTextInput.setText("");
             findViewById(R.id.idSendButton).setEnabled(true);
             //findViewById(R.id.idDisconnectButton).setEnabled(true);
         }
     };
+    
+    
+    private void sendMsgCoord() {
+    	
+    	String message = "";
+    	// identifica que jogador é
+    	message += thisPlayerNumber + " ";
+    	message += gameMapView.getXCoord() + " ";
+    	message += gameMapView.getYCoord() + " ";
+    	message += "\n";
+    
+    	try {
+			mCliSocket.getOutputStream().write( message.getBytes() );
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    }
+    
     /*
     private OnClickListener listenerSendButton = new OnClickListener() {
         @Override
@@ -410,7 +438,6 @@ public class GameScreen extends Activity
 
         @Override
         protected Void doInBackground(Void... params) {
-
             Log.d(TAG, "IncommingCommTask started (" + this.hashCode() + ").");
 
             try {
@@ -465,6 +492,7 @@ public class GameScreen extends Activity
             } catch (IOException e) {
                 return "IO error:" + e.getMessage();
             }
+            connected = true;
             return null;
         }
 
@@ -516,22 +544,42 @@ public class GameScreen extends Activity
         @Override
         protected void onProgressUpdate(String... values) {
         	
-        	// parse received message, don0t change this player data
-        	gdm.parseData(values[0], thisPlayerNumber);
+        	// se for o servidor recebe coordenadas de um jogador
+        	if (thisPlayerNumber == 0){
+        		 parseCoorde(values[0]);
+        	}
+        	// se for jogador recebe mapa
+        	else {
+            	// parse received message, TODO don0t change this player data
+            	// ignorar alterações ao meu jogador
+            	gameMapView.setMap(parseMap(values[0]));
+        		
+        	}
         	
-        	String aux[] = values[0].split(" ");
-        	int otherPlayer;
-        	//TODO fix this to allow several players
-        	if (getThisPlayerNumber() == 0)
-        		otherPlayer =1;
-        	else
-        		otherPlayer = 0;
-        	
-        	mTextOutput.setText("["+getThisPlayerNumber()+"]"+" Recebi" + aux[0] + aux[1] + "\n");
-        	
+        	//mTextOutput.setText("["+getThisPlayerNumber()+"]"+" Recebi" + aux[0] + aux[1] + "\n");
             //mTextOutput.append(values[0]+"\n")  ;//
         }
+        
+    	private int[][] parseMap(String string) {
+    		String aux[] = string.split(" ");
+    		int k=0;
+    		
+    		int receivedMap[][] = new int [gameMapView.getNUM_ROWS()][gameMapView.getNUM_COLUMNS()];
+    		
+    		for (int i = 0; i < gameMapView.getNUM_ROWS(); i++){
+    			for (int j = 0; j < gameMapView.getNUM_COLUMNS(); j++) {
+    				receivedMap[i][j] = Integer.parseInt(aux[k++]);
+    			}
+    		}
+    		return receivedMap;
+    	}
 
+    	private void parseCoorde(String coordMsg){
+    		String aux[] = coordMsg.split(" ");
+    		mTextOutput.setText(aux[0]+ " "+aux[1]+" "+ aux[2] + " " + "\n");
+    	}
+    	
+    	
         @Override
         protected void onPostExecute(Void result) {
             if (!s.isClosed()) {
@@ -671,5 +719,9 @@ public class GameScreen extends Activity
 
 	public void setThisPlayerNumber(int thisPlayerNumber) {
 		this.thisPlayerNumber = thisPlayerNumber;
+	}
+
+	public void updateMap() {
+		if(connected) updateGameData();
 	}
 }

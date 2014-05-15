@@ -203,6 +203,10 @@ public class GameMap extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
+        mainGameScreen.updateMap();
+        mainGameScreen.updateScore(playerScore);
+        mainGameScreen.updateTimeLeft(timeLeft);
+        
         // desenhar fundo antes de tudo o resto - evita que explosoes sejam
         // desenhadas (na iteraçao x,y) antes do fundo que vai ser desenhado
         // em iteraçoes seguintes (x+i e y+i)
@@ -529,10 +533,6 @@ public class GameMap extends View {
     public void setXCoord(int x) {
         this.xPlayerCoordPrev = getXCoord();
         updatePlayerCoords(x,getYCoord());
-        
-        // this is here because moving it to onDraw() gets a NullPointerEx on layout graphic design
-        mainGameScreen.updateScore(playerScore);
-        mainGameScreen.updateTimeLeft(timeLeft);
     }
 
     public int getYCoord() {
