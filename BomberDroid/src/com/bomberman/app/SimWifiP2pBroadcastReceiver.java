@@ -24,7 +24,7 @@ public class SimWifiP2pBroadcastReceiver extends BroadcastReceiver {
         String action = intent.getAction();
         if (SimWifiP2pBroadcast.WIFI_P2P_STATE_CHANGED_ACTION.equals(action)) {
 
-        	// This action is triggered when the WDSim service changes state:
+        	// This action is triggered when the WDSim service changes state:22
         	// - creating the service generates the WIFI_P2P_STATE_ENABLED event
         	// - destroying the service generates the WIFI_P2P_STATE_DISABLED event
 

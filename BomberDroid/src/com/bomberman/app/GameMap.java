@@ -99,7 +99,7 @@ public class GameMap extends View {
         public void run() {
         	// make sure the robot is still at this position - it could've been killed
         	// between last execution of the Runnable and this one
-        	if((getMap()[x][y] & (1<<4)) != 0) {	
+        	if((map[x][y] & (1<<4)) != 0) {	
         		Coord newCoord = moveRobots(x,y);
 	            x = newCoord.x;
 	            y = newCoord.y;
@@ -203,12 +203,9 @@ public class GameMap extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
-        
-        //mainGameScreen.sendMap();
-        
         // desenhar fundo antes de tudo o resto - evita que explosoes sejam
-        // desenhadas (na iteraï¿½ao x,y) antes do fundo que vai ser desenhado
-        // em iteraï¿½oes seguintes (x+i e y+i)
+        // desenhadas (na iteraçao x,y) antes do fundo que vai ser desenhado
+        // em iteraçoes seguintes (x+i e y+i)
         for (int x = 0; x < NUM_ROWS; x++) {
             int x_float = x * CELL_SIZE;
             for (int y = 0 ; y < NUM_COLUMNS; y++) {
@@ -283,7 +280,6 @@ public class GameMap extends View {
                 }
 
             }
-
         }
 
         if((map[xPlayerCoord][yPlayerCoord] & (1<<6)) != 0 || (map[xPlayerCoord][yPlayerCoord] & (1<<7)) != 0 || (map[xPlayerCoord][yPlayerCoord] & (1<<5)) != 0) { // invalid movement, rewind
@@ -587,7 +583,7 @@ public class GameMap extends View {
     }
 
 	public Object getInitialPlayerPos() {
-		// TODO Auto-generated method stub
+		// TODO Auto-generated method stub22
 		return null;
 	}
 
@@ -623,5 +619,4 @@ public class GameMap extends View {
 	public void setMap(int[][] map) {
 		this.map = map;
 	}
-
 }
