@@ -51,7 +51,7 @@ public class GameScreen extends Activity
     private SimWifiP2pSocketServer mSrvSocket = null;
     private ReceiveCommTask mComm = null;
     private SimWifiP2pSocket mCliSocket = null;
-    private TextView mTextInput;
+    //private TextView mTextInput;
     private TextView mTextOutput;
     
     private GameDataManager gdm;
@@ -189,7 +189,7 @@ public class GameScreen extends Activity
             
             updateGameData();
             
-            mTextInput.setText("");
+            //mTextInput.setText("");
             findViewById(R.id.idSendButton).setEnabled(true);
             //findViewById(R.id.idDisconnectButton).setEnabled(true);
         }
@@ -506,8 +506,8 @@ public class GameScreen extends Activity
             findViewById(R.id.idSendButton).setEnabled(true);
             //findViewById(R.id.idDisconnectButton).setEnabled(true);
             findViewById(R.id.idConnectButton).setEnabled(false);
-            mTextInput.setHint("");
-            mTextInput.setText("");
+            //mTextInput.setHint("");
+            //mTextInput.setText("");
 
         }
 
@@ -645,9 +645,9 @@ public class GameScreen extends Activity
 
     private void guiUpdateInitState() {
 
-        mTextInput = (TextView) findViewById(R.id.editText1);
-        mTextInput.setHint("type remote virtual IP (192.168.0.0/16)");
-        mTextInput.setEnabled(false);
+        //mTextInput = (TextView) findViewById(R.id.editText1);
+        //mTextInput.setHint("type remote virtual IP (192.168.0.0/16)");
+        //mTextInput.setEnabled(false);
 
         mTextOutput = (TextView) findViewById(R.id.editText2);
         mTextOutput.setEnabled(false);
@@ -665,8 +665,8 @@ public class GameScreen extends Activity
 
     private void guiUpdateDisconnectedState() {
 
-        mTextInput.setEnabled(true);
-        mTextInput.setHint("type remote virtual IP (192.168.0.0/16)");
+        //mTextInput.setEnabled(true);
+        //mTextInput.setHint("type remote virtual IP (192.168.0.0/16)");
         mTextOutput.setEnabled(true);
         mTextOutput.setText("");
 

@@ -113,15 +113,15 @@
         android:onClick="onClickBomb" />
 
 
-<!--     <Button -->
-<!--         style="?android:attr/buttonStyleSmall" -->
-<!--         android:id="@+id/idSendButton" -->
-<!--         android:layout_width="wrap_content" -->
-<!--         android:layout_height="wrap_content" -->
-<!--         android:text="@string/sendButton" -->
-<!--         android:layout_alignParentBottom="true" -->
-<!--         android:layout_alignParentLeft="true" -->
-<!--         android:layout_alignParentStart="true" /> -->
+    <Button
+        style="?android:attr/buttonStyleSmall"
+        android:id="@+id/idSendButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/sendButton"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
 
     <Button
         style="?android:attr/buttonStyleSmall"
@@ -178,15 +178,15 @@
 <!--         android:layout_alignRight="@+id/button5" -->
 <!--         android:text="@string/inRangeButton" /> -->
 
-    <EditText
-        android:id="@+id/editText1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/idConnectButton"
-        android:layout_alignEnd="@+id/idSendButton"
-        android:layout_alignLeft="@+id/idConnectButton"
-        android:ems="10"
-        android:text="ola" />
+<!--     <EditText -->
+<!--         android:id="@+id/editText1" -->
+<!--         android:layout_width="wrap_content" -->
+<!--         android:layout_height="wrap_content" -->
+<!--         android:layout_above="@+id/idConnectButton" -->
+<!--         android:layout_alignEnd="@+id/idSendButton" -->
+<!--         android:layout_alignLeft="@+id/idConnectButton" -->
+<!--         android:ems="10" -->
+<!--         android:text="ola" /> -->
 
     <EditText
         android:id="@+id/editText2"

@@ -203,7 +203,8 @@ public class GameMap extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
-        mainGameScreen.sendMap();
+        
+        //mainGameScreen.sendMap();
         
         // desenhar fundo antes de tudo o resto - evita que explosoes sejam
         // desenhadas (na itera�ao x,y) antes do fundo que vai ser desenhado
