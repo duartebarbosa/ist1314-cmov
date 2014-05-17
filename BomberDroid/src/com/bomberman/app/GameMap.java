@@ -99,13 +99,24 @@ public class GameMap extends View {
         public void run() {
         	// make sure the robot is still at this position - it could've been killed
         	// between last execution of the Runnable and this one
-        	if((map[x][y] & (1<<4)) != 0) {	
-        		Coord newCoord = moveRobots(x,y);
-	            x = newCoord.x;
-	            y = newCoord.y;
-	            //killPlayer(x, y);
-	            invalidate();
-	            handler.postDelayed(this, (long) (1000/robotSpeed));
+        	if((map[x][y] & (1<<4)) != 0) {
+        		if (mainGameScreen.connected == true && mainGameScreen.getThisPlayerNumber() == 0){
+	        		Coord newCoord = moveRobots(x,y);
+		            x = newCoord.x;
+		            y = newCoord.y;
+		            //killPlayer(x, y);
+		            invalidate();
+		            mainGameScreen.updateGameData();
+		            handler.postDelayed(this, (long) (1000/robotSpeed));
+        		} else if(mainGameScreen.connected == false) {
+        			
+        			Coord newCoord = moveRobots(x,y);
+		            x = newCoord.x;
+		            y = newCoord.y;
+		            //killPlayer(x, y);
+		            invalidate();
+		            handler.postDelayed(this, (long) (1000/robotSpeed));
+        		}
         	}
         }
     }
@@ -203,9 +214,7 @@ public class GameMap extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
-        mainGameScreen.updateMap();
-        mainGameScreen.updateScore(playerScore);
-        mainGameScreen.updateTimeLeft(timeLeft);
+        
         
         // desenhar fundo antes de tudo o resto - evita que explosoes sejam
         // desenhadas (na iteraçao x,y) antes do fundo que vai ser desenhado
@@ -226,7 +235,10 @@ public class GameMap extends View {
             for (int y = 0 ; y < NUM_COLUMNS; y++) {
                 int y_float = y * CELL_SIZE;
                 
-	            if((map[x][y] & (1 << 4)) != 0)
+                if((map[x][y] & (1 << 1)) != 0)
+	                drawBomberman(canvas, bombermanDownBitmap);
+                
+                if((map[x][y] & (1 << 4)) != 0)
 	                canvas.drawBitmap(enemyBitmap, y_float, x_float, paint);
 	            
 	            if((map[x][y] & (1 << 5)) != 0)
@@ -278,17 +290,20 @@ public class GameMap extends View {
                                 canvas.drawBitmap(explosionBottomBitmap, y_float, (x+i) * CELL_SIZE, paint);
                         canvas.drawBitmap(explosionCenterBitmap, y_float, x_float, paint);
 
-                        destroy((1<<6) ,x, y, canvas);
-                        destroy((1<<4), x, y, canvas);
-                        killPlayer(x, y, canvas);
+                        if ((mainGameScreen.connected == true && mainGameScreen.getThisPlayerNumber() == 0) || (mainGameScreen.connected == false)){
+	                        destroy((1<<6) ,x, y, canvas);
+	                        destroy((1<<4), x, y, canvas);
+	                        killPlayer(x, y, canvas);
+                        }
                 }
 
             }
         }
 
-        if((map[xPlayerCoord][yPlayerCoord] & (1<<6)) != 0 || (map[xPlayerCoord][yPlayerCoord] & (1<<7)) != 0 || (map[xPlayerCoord][yPlayerCoord] & (1<<5)) != 0) { // invalid movement, rewind
-            updatePlayerCoords(xPlayerCoordPrev, yPlayerCoordPrev);
-        }
+	    if(mainGameScreen.connected == false)
+        	if((map[xPlayerCoord][yPlayerCoord] & (1<<6)) != 0 || (map[xPlayerCoord][yPlayerCoord] & (1<<7)) != 0 || (map[xPlayerCoord][yPlayerCoord] & (1<<5)) != 0) { // invalid movement, rewind
+	            updatePlayerCoords(xPlayerCoordPrev, yPlayerCoordPrev);
+	        }
 
         switch (bombermanDirection) {
             case DOWN:
@@ -306,7 +321,8 @@ public class GameMap extends View {
             default:
                 break;
         }
-        killPlayer(xPlayerCoord,yPlayerCoord, canvas);
+        if ((mainGameScreen.connected == true && mainGameScreen.getThisPlayerNumber() == 0) || (mainGameScreen.connected == false))
+        	killPlayer(xPlayerCoord,yPlayerCoord, canvas);
 
 
         paint.setColor(Color.BLACK);
@@ -315,7 +331,7 @@ public class GameMap extends View {
         //canvas.drawText("Score: "+Integer.toString(playerScore), 0,250,paint);
         paint.reset();
 
-        //mainGameScreen.updateGameData();
+        
 
     }
 
@@ -333,6 +349,11 @@ public class GameMap extends View {
             @Override
             public void run() {
                 map[x][y] = (1<<8);
+                if(mainGameScreen.connected == true) {
+	                mainGameScreen.updateMap();
+	                mainGameScreen.updateScore(playerScore);
+	                mainGameScreen.updateTimeLeft(timeLeft);
+                }
                 invalidate();
             }
         };
@@ -341,12 +362,19 @@ public class GameMap extends View {
             public void run() {
                 map[x][y] = 0;
                 //killPlayer(x, y);
+                if(mainGameScreen.connected == true) {
+	                mainGameScreen.updateMap();
+	                mainGameScreen.updateScore(playerScore);
+	                mainGameScreen.updateTimeLeft(timeLeft);
+                }
                 invalidate();
             }
         };
 
-        handler.postDelayed(startExplosion, (long) (explosionTimeout*1000));
-        handler.postDelayed(endExplosion, (long) (explosionTimeout*1000 + explosionDuration*1000));
+        if ((mainGameScreen.connected == true && mainGameScreen.getThisPlayerNumber() == 0) || mainGameScreen.connected == false){
+	        handler.postDelayed(startExplosion, (long) (explosionTimeout*1000));
+	        handler.postDelayed(endExplosion, (long) (explosionTimeout*1000 + explosionDuration*1000));
+        }
 
     }
 
@@ -557,6 +585,14 @@ public class GameMap extends View {
 
     public void setBombermanDirection(Direction bombermanDirection) {
         this.bombermanDirection = bombermanDirection;
+        if(mainGameScreen.connected == true) {
+        	if((map[xPlayerCoord][yPlayerCoord] & (1<<6)) != 0 || (map[xPlayerCoord][yPlayerCoord] & (1<<7)) != 0 || (map[xPlayerCoord][yPlayerCoord] & (1<<5)) != 0) { // invalid movement, rewind
+                updatePlayerCoords(xPlayerCoordPrev, yPlayerCoordPrev);
+            }
+        	mainGameScreen.updateGameData();
+        }
+        invalidate();
+        	
     }
 
     //constructors
@@ -618,5 +654,7 @@ public class GameMap extends View {
 
 	public void setMap(int[][] map) {
 		this.map = map;
+		//mainGameScreen.updateGameData();		
+		invalidate();
 	}
 }

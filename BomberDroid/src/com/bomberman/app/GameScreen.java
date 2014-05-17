@@ -52,7 +52,7 @@ public class GameScreen extends Activity
     private ReceiveCommTask mComm = null;
     private SimWifiP2pSocket mCliSocket = null;
     //private TextView mTextInput;
-    private TextView mTextOutput;
+    //private TextView mTextOutput;
     
     private GameDataManager gdm;
     private int thisPlayerNumber;
@@ -124,7 +124,7 @@ public class GameScreen extends Activity
         gameMapView.setYCoord(gameMapView.getYCoord());
         gameMapView.setBombermanDirection(GameMap.Direction.TOP);
         //TODO: change to 4 params invalidate();
-        gameMapView.invalidate();
+        //gameMapView.invalidate();
     }
 
     public void onClickDown(View view) {
@@ -132,7 +132,7 @@ public class GameScreen extends Activity
         gameMapView.setYCoord(gameMapView.getYCoord());
         gameMapView.setBombermanDirection(GameMap.Direction.DOWN);
         //TODO: change to 4 params invalidate();
-        gameMapView.invalidate();
+        //gameMapView.invalidate();
     }
 
     public void onClickLeft(View view) {
@@ -140,7 +140,7 @@ public class GameScreen extends Activity
         gameMapView.setXCoord(gameMapView.getXCoord());
         gameMapView.setBombermanDirection(GameMap.Direction.LEFT);
         //TODO: change to 4 params invalidate();
-        gameMapView.invalidate();
+        //gameMapView.invalidate();
     }
 
     public void onClickRight(View view) {
@@ -148,13 +148,13 @@ public class GameScreen extends Activity
         gameMapView.setXCoord(gameMapView.getXCoord());
         gameMapView.setBombermanDirection(GameMap.Direction.RIGHT);
         //TODO: change to 4 params invalidate();
-        gameMapView.invalidate();
+        //gameMapView.invalidate();
     }
 
     public void onClickBomb(View view) {
         gameMapView.addBomb(gameMapView.getXCoord(), gameMapView.getYCoord());
         //TODO: change to 4 params invalidate();
-        gameMapView.invalidate();
+        //gameMapView.invalidate();
     }
 
     /*
@@ -471,6 +471,7 @@ public class GameScreen extends Activity
         protected void onProgressUpdate(SimWifiP2pSocket... values) {
             mCliSocket = values[0];
             mComm = new ReceiveCommTask();
+            connected = true;
             mComm.execute(mCliSocket);
         }
     }
@@ -479,7 +480,7 @@ public class GameScreen extends Activity
 
         @Override
         protected void onPreExecute() {
-            mTextOutput.setText("Connecting...");
+           // mTextOutput.setText("Connecting...");
         }
 
         @Override
@@ -499,7 +500,7 @@ public class GameScreen extends Activity
         @Override
         protected void onPostExecute(String result) {
             if (result != null) {
-                mTextOutput.setText(result);
+                //mTextOutput.setText(result);
                 findViewById(R.id.idConnectButton).setEnabled(true);
             }
             else {
@@ -532,7 +533,7 @@ public class GameScreen extends Activity
 
         @Override
         protected void onPreExecute() {
-            mTextOutput.setText("");
+            //mTextOutput.setText("");
             findViewById(R.id.idSendButton).setEnabled(true);
             //findViewById(R.id.idDisconnectButton).setEnabled(true);
             findViewById(R.id.idConnectButton).setEnabled(false);
@@ -576,7 +577,7 @@ public class GameScreen extends Activity
 
     	private void parseCoorde(String coordMsg){
     		String aux[] = coordMsg.split(" ");
-    		mTextOutput.setText(aux[0]+ " "+aux[1]+" "+ aux[2] + " " + "\n");
+    		gameMapView.getMap()[Integer.parseInt(aux[1])][Integer.parseInt(aux[2])] = (gameMapView.getMap()[Integer.parseInt(aux[1])][Integer.parseInt(aux[2])] | (1 << Integer.parseInt(aux[0])));
     	}
     	
     	
@@ -682,9 +683,9 @@ public class GameScreen extends Activity
         //mTextInput.setHint("type remote virtual IP (192.168.0.0/16)");
         //mTextInput.setEnabled(false);
 
-        mTextOutput = (TextView) findViewById(R.id.editText2);
-        mTextOutput.setEnabled(false);
-        mTextOutput.setText("");
+//        mTextOutput = (TextView) findViewById(R.id.editText2);
+//        mTextOutput.setEnabled(false);
+//        mTextOutput.setText("");
 
         findViewById(R.id.idConnectButton).setEnabled(false);
         //findViewById(R.id.idDisconnectButton).setEnabled(false);
@@ -700,8 +701,8 @@ public class GameScreen extends Activity
 
         //mTextInput.setEnabled(true);
         //mTextInput.setHint("type remote virtual IP (192.168.0.0/16)");
-        mTextOutput.setEnabled(true);
-        mTextOutput.setText("");
+//        mTextOutput.setEnabled(true);
+//        mTextOutput.setText("");
 
         findViewById(R.id.idSendButton).setEnabled(false);
         findViewById(R.id.idConnectButton).setEnabled(true);
