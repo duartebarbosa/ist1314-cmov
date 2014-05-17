@@ -235,8 +235,10 @@ public class GameMap extends View {
             for (int y = 0 ; y < NUM_COLUMNS; y++) {
                 int y_float = y * CELL_SIZE;
                 
+                if((map[x][y] & (1 << 0)) != 0)
+                	canvas.drawBitmap(bombermanTopBitmap, y *CELL_SIZE, x *CELL_SIZE, paint);
                 if((map[x][y] & (1 << 1)) != 0)
-	                drawBomberman(canvas, bombermanDownBitmap);
+                	canvas.drawBitmap(bombermanDownBitmap, y *CELL_SIZE, x *CELL_SIZE, paint);
                 
                 if((map[x][y] & (1 << 4)) != 0)
 	                canvas.drawBitmap(enemyBitmap, y_float, x_float, paint);
@@ -305,7 +307,7 @@ public class GameMap extends View {
 	            updatePlayerCoords(xPlayerCoordPrev, yPlayerCoordPrev);
 	        }
 
-        switch (bombermanDirection) {
+        /*switch (bombermanDirection) {
             case DOWN:
                 drawBomberman(canvas, bombermanDownBitmap);
                 break;
@@ -320,7 +322,7 @@ public class GameMap extends View {
                 break;
             default:
                 break;
-        }
+        }*/
         if ((mainGameScreen.connected == true && mainGameScreen.getThisPlayerNumber() == 0) || (mainGameScreen.connected == false))
         	killPlayer(xPlayerCoord,yPlayerCoord, canvas);
 
